@@ -2,18 +2,662 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>HalalGames Guide — Know Before You Play</title>
   <meta name="description" content="Free tool to check if video games are Halal-friendly. Search any game for instant content breakdown: faith impact, financial ethics, modesty, and violence levels.">
+  <meta name="theme-color" content="#06070b">
   <meta property="og:title" content="HalalGames Guide — Halal Video Game Screener">
   <meta property="og:description" content="Know Before You Play. Free halal video game content screener.">
   <meta property="og:url" content="https://halalgames.mscarabia.com">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="HalalGames Guide — Halal Video Game Screener">
+  <meta name="twitter:description" content="Know Before You Play. Free halal video game content screener.">
   <link rel="canonical" href="https://halalgames.mscarabia.com">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2306070b'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='50'%3E🎮%3C/text%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" media="print" id="fonts-link">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            body: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            heading: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            deep: '#06070b',
+            surface: '#0c1018',
+            card: '#12192a',
+            border: '#1a2642',
+            halal: '#10B981',
+            caution: '#F59E0B',
+            haram: '#EF4444',
+            brand: '#818cf8',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-deep: #06070b;
+      --bg-surface: #0c1018;
+      --bg-card: #12192a;
+      --border: #1a2642;
+      --text: #c8d6e5;
+      --heading: #f0f4f8;
+      --muted: #6b7fa3;
+      --accent-halal: #10B981;
+      --accent-caution: #F59E0B;
+      --accent-haram: #EF4444;
+      --accent-brand: #818cf8;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; background: var(--bg-deep); }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: transparent; color: var(--text);
+      min-height: 100vh; min-height: 100dvh;
+    }
+    h1, h2, h3, h4 { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; }
+
+    /* Loading */
+    #loader { position: fixed; inset: 0; z-index: 999; background: var(--bg-deep); display: flex; align-items: center; justify-content: center; transition: opacity 0.3s; }
+    #loader.hide { opacity: 0; pointer-events: none; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent-brand); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Search */
+    #search-input { background: var(--bg-card); border: 1px solid var(--border); color: var(--heading); font-size: 1.125rem; padding: 1rem 1.25rem 1rem 3rem; border-radius: 12px; width: 100%; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    #search-input:focus { border-color: var(--accent-brand); box-shadow: 0 0 0 3px rgba(129,140,248,0.15); }
+    #search-input::placeholder { color: var(--muted); }
+
+    /* Cards */
+    .game-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+    .game-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+    .verdict-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .verdict-halal { background: rgba(16,185,129,0.15); color: var(--accent-halal); }
+    .verdict-caution { background: rgba(245,158,11,0.15); color: var(--accent-caution); }
+    .verdict-haram { background: rgba(239,68,68,0.15); color: var(--accent-haram); }
+
+    /* Score bar */
+    .score-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+    .score-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+    /* Breakdown row */
+    .breakdown-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(26,38,66,0.5); }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .icon-safe { background: rgba(16,185,129,0.15); color: var(--accent-halal); }
+    .icon-caution { background: rgba(245,158,11,0.15); color: var(--accent-caution); }
+    .icon-haram { background: rgba(239,68,68,0.15); color: var(--accent-haram); }
+
+    /* Filter chips */
+    .chip { display: inline-flex; align-items: center; padding: 6px 16px; border-radius: 999px; font-size: 0.8125rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.2s; }
+    .chip:hover { border-color: var(--accent-brand); color: var(--heading); }
+    .chip.active { background: rgba(129,140,248,0.15); border-color: var(--accent-brand); color: var(--accent-brand); }
+
+    /* Tip box */
+    .tip-box { background: rgba(129,140,248,0.08); border: 1px solid rgba(129,140,248,0.2); border-radius: 10px; padding: 12px 16px; }
+
+    /* Skeleton */
+    .skeleton { background: linear-gradient(90deg, var(--bg-card) 25%, rgba(26,38,66,0.5) 50%, var(--bg-card) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Modal overlay */
+    .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(6,7,11,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 2rem; position: relative; }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; width: 32px; height: 32px; border-radius: 8px; background: var(--border); color: var(--muted); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .modal-close:hover { color: var(--heading); }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .game-cards { grid-template-columns: 1fr !important; }
+      .modal-content { padding: 1.25rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
 </head>
 <body>
-  <h1>HalalGames Guide</h1>
-  <p>Replace this file with Opus-generated code.</p>
+
+  <!-- Loading -->
+  <div id="loader">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Hero -->
+  <header style="text-align:center; padding: 3rem 1rem 1.5rem;">
+    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎮</div>
+    <h1 style="font-size: clamp(1.75rem, 5vw, 2.5rem); color: var(--heading); font-weight: 700; margin-bottom: 0.5rem;">HalalGames Guide</h1>
+    <p style="color: var(--muted); font-size: 1.0625rem; max-width: 480px; margin: 0 auto 2rem;">Know Before You Play. Search any game and get an instant Halal content breakdown.</p>
+
+    <!-- Search -->
+    <div style="max-width: 600px; margin: 0 auto; position: relative;">
+      <svg style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="search-input" placeholder="Search for a game..." autocomplete="off" autofocus>
+      <kbd style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--border); color:var(--muted); padding:2px 8px; border-radius:4px; font-size:0.75rem; font-family:monospace;">ESC</kbd>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:1.25rem;">
+      <button class="chip active" data-filter="all">All Games</button>
+      <button class="chip" data-filter="halal">Halal Friendly</button>
+      <button class="chip" data-filter="caution">Caution</button>
+      <button class="chip" data-filter="haram">Avoid</button>
+    </div>
+  </header>
+
+  <!-- Sort -->
+  <div style="max-width:960px; margin:0 auto; padding:0 1rem; display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+    <div id="result-count" style="color:var(--muted); font-size:0.875rem;"></div>
+    <select id="sort-select" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px; font-size:0.8125rem; outline:none; cursor:pointer;">
+      <option value="relevance">Sort: Relevance</option>
+      <option value="score">Sort: Halal Score</option>
+      <option value="name">Sort: Name A–Z</option>
+    </select>
+  </div>
+
+  <!-- Results grid -->
+  <main style="max-width:960px; margin:0 auto; padding:0 1rem 3rem;">
+    <div id="results" class="game-cards" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;"></div>
+    <div id="empty-state" style="display:none; text-align:center; padding:3rem 1rem; color:var(--muted);">
+      <div style="font-size:3rem; margin-bottom:1rem;">🔍</div>
+      <p style="font-size:1.125rem; color:var(--heading); margin-bottom:0.5rem;">No games found</p>
+      <p>Try searching for a different game title</p>
+    </div>
+    <div id="skeletons" style="display:none; display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;"></div>
+  </main>
+
+  <!-- Detail modal -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal-content" id="detail-content"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer style="text-align:center; padding:2rem 1rem; border-top:1px solid var(--border); color:var(--muted); font-size:0.8125rem; max-width:640px; margin:0 auto;">
+    <p style="margin-bottom:0.5rem;">This is a community tool for informational purposes only and does not constitute a religious ruling (fatwa).</p>
+    <p style="margin-bottom:0.5rem;">Always consult qualified scholars for personal religious guidance.</p>
+    <p style="color:var(--accent-brand);">HalalGames Guide — Part of MSC Arabia community tools</p>
+  </footer>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const CONFIG = {
+  RAWG_API_KEY: 'YOUR_RAWG_API_KEY_HERE', // Get free key at https://rawg.io/apidocs
+  API_BASE: 'https://api.rawg.io/api',
+};
+
+/* ============================================================
+   MOCK DATABASE (20 games, works offline)
+   ============================================================ */
+const MOCK_GAMES = [
+  // — HALAL —
+  { id: 1001, name: 'Minecraft', slug: 'minecraft', released: '2011-05-18', background_image: '', genres: [{name:'Sandbox'},{name:'Survival'}], tags: [{name:'singleplayer'},{name:'multiplayer'},{name:'crafting'},{name:'building'},{name:'open-world'}], rating: 4.5, description_raw: 'A sandbox game where you build, explore, and survive in a blocky 3D world. Create structures, mine resources, and craft tools. Family-friendly with creative and survival modes.', esrb_rating: {name:'Everyone 10+'} },
+  { id: 1002, name: 'Tetris Effect: Connected', slug: 'tetris-effect-connected', released: '2020-11-10', background_image: '', genres: [{name:'Puzzle'},{name:'Casual'}], tags: [{name:'singleplayer'},{name:'multiplayer'},{name:'puzzle'},{name:'family'}], rating: 4.3, description_raw: 'The classic tile-matching puzzle game reimagined with stunning visuals and music. Completely family-friendly with no objectionable content.', esrb_rating: {name:'Everyone'} },
+  { id: 1003, name: 'EA Sports FC 25', slug: 'ea-sports-fc-25', released: '2024-09-27', background_image: '', genres: [{name:'Sports'},{name:'Simulation'}], tags: [{name:'sports'},{name:'soccer'},{name:'multiplayer'},{name:'simulation'}], rating: 3.8, description_raw: 'The latest installment in the EA Sports football franchise. Real teams, players, and stadiums. Clean sports simulation with no objectionable content.', esrb_rating: {name:'Everyone'} },
+  { id: 1004, name: 'Mario Kart 8 Deluxe', slug: 'mario-kart-8-deluxe', released: '2017-04-28', background_image: '', genres: [{name:'Racing'},{name:'Family'}], tags: [{name:'racing'},{name:'multiplayer'},{name:'family'},{name:'kids'},{name:'fun'}], rating: 4.7, description_raw: 'The definitive kart racing game. Race iconic tracks with Mario characters. Family-friendly, colorful, and fun for all ages. No objectionable content.', esrb_rating: {name:'Everyone'} },
+  // — CAUTION —
+  { id: 1005, name: 'The Witcher 3: Wild Hunt', slug: 'the-witcher-3-wild-hunt', released: '2015-05-19', background_image: '', genres: [{name:'RPG'},{name:'Action'}], tags: [{name:'singleplayer'},{name:'open-world'},{name:'story'},{name:'magic'},{name:'fantasy'}], rating: 4.7, description_raw: 'An epic fantasy RPG where you play as Geralt, a monster hunter. Contains magic, sorcery, some sexual content, alcohol references, and fantasy violence. Strong story-driven gameplay.', esrb_rating: {name:'Mature'} },
+  { id: 1006, name: 'God of War Ragnarok', slug: 'god-of-war-ragnarok', released: '2022-11-09', background_image: '', genres: [{name:'Action'},{name:'Adventure'}], tags: [{name:'singleplayer'},{name:'story'},{name:'mythology'},{name:'violence'},{name:'norse-mythology'}], rating: 4.7, description_raw: 'A mythological action adventure based on Norse mythology. Features gods, magic, and intense combat. Contains violence, some gore, and polytheistic themes.', esrb_rating: {name:'Mature'} },
+  { id: 1007, name: 'The Elder Scrolls V: Skyrim', slug: 'the-elder-scrolls-v-skyrim', released: '2011-11-11', background_image: '', genres: [{name:'RPG'},{name:'Action'}], tags: [{name:'singleplayer'},{name:'open-world'},{name:'magic'},{name:'dragons'},{name:'fantasy'}], rating: 4.5, description_raw: 'An open-world fantasy RPG. Explore a vast world, fight dragons, and use magic spells. Contains fantasy violence, magic/sorcery, alcohol, and some dark themes.', esrb_rating: {name:'Mature'} },
+  { id: 1008, name: 'Diablo IV', slug: 'diablo-iv', released: '2023-06-06', background_image: '', genres: [{name:'RPG'},{name:'Action'}], tags: [{name:'multiplayer'},{name:'looter'},{name:'demons'},{name:'dark-fantasy'},{name:'magic'}], rating: 4.1, description_raw: 'A dark action RPG set in a gothic world overrun by demons. Features demonic themes, dark magic, violence, and loot-based gameplay with microtransactions.', esrb_rating: {name:'Mature'} },
+  // — AVOID —
+  { id: 1009, name: 'Grand Theft Auto V', slug: 'grand-theft-auto-v', released: '2013-09-17', background_image: '', genres: [{name:'Action'},{name:'Adventure'}], tags: [{name:'open-world'},{name:'multiplayer'},{name:'violence'},{name:'crime'},{name:'adult'}], rating: 4.4, description_raw: 'An open-world action game centered on crime, violence, and adult themes. Contains extreme violence, sexual content, drug use, gambling, and criminal activity.', esrb_rating: {name:'Mature'} },
+  { id: 1010, name: 'Mortal Kombat 1', slug: 'mortal-kombat-1', released: '2023-09-19', background_image: '', genres: [{name:'Fighting'}], tags: [{name:'fighting'},{name:'violence'},{name:'gore'},{name:'multiplayer'}], rating: 3.9, description_raw: 'A fighting game known for extreme violence and gore. Features graphic fatalities, brutal combat, and mature themes. Not suitable for those sensitive to violence.', esrb_rating: {name:'Mature'} },
+  { id: 1011, name: 'Cyberpunk 2077', slug: 'cyberpunk-2077', released: '2020-12-10', background_image: '', genres: [{name:'RPG'},{name:'Action'}], tags: [{name:'open-world'},{name:'singleplayer'},{name:'cyberpunk'},{name:'violence'},{name:'adult'}], rating: 4.1, description_raw: 'An open-world RPG set in a dystopian cyberpunk future. Contains strong sexual content, violence, drug use, and mature themes throughout.', esrb_rating: {name:'Mature'} },
+  { id: 1012, name: 'Dead or Alive 6', slug: 'dead-or-alive-6', released: '2019-03-01', background_image: '', genres: [{name:'Fighting'}], tags: [{name:'fighting'},{name:'ecchi'},{name:'multiplayer'}], rating: 3.4, description_raw: 'A fighting game featuring female characters in revealing outfits with exaggerated physics. Contains sexualized content and suggestive themes.', esrb_rating: {name:'Mature'} },
+  // — MIXED / INTERESTING —
+  { id: 1013, name: 'Fortnite', slug: 'fortnite', released: '2017-07-25', background_image: '', genres: [{name:'Shooter'},{name:'Action'}], tags: [{name:'multiplayer'},{name:'battle-royale'},{name:'shooter'},{name:'free-to-play'}], rating: 3.9, description_raw: 'A colorful battle royale shooter. Cartoonish violence, building mechanics, and social features. Contains mild violence, dances, and in-game purchases/loot.', esrb_rating: {name:'Teen'} },
+  { id: 1014, name: 'Among Us', slug: 'among-us', released: '2018-06-15', background_image: '', genres: [{name:'Casual'},{name:'Strategy'}], tags: [{name:'multiplayer'},{name:'social'},{name:'deduction'},{name:'party'}], rating: 4.0, description_raw: 'A social deduction game where crewmates find impostors. Simple cartoon graphics, mild violence (character elimination animations), and social interaction.', esrb_rating: {name:'Everyone 10+'} },
+  { id: 1015, name: 'Stardew Valley', slug: 'stardew-valley', released: '2016-02-26', background_image: '', genres: [{name:'Simulation'},{name:'RPG'}], tags: [{name:'farming'},{name:'singleplayer'},{name:'relaxing'},{name:'pixel-art'},{name:'crafting'}], rating: 4.4, description_raw: 'A peaceful farming simulation. Grow crops, raise animals, fish, and build relationships. Completely wholesome with no objectionable content.', esrb_rating: {name:'Everyone'} },
+  { id: 1016, name: 'Rocket League', slug: 'rocket-league', released: '2015-07-07', background_image: '', genres: [{name:'Sports'},{name:'Racing'}], tags: [{name:'sports'},{name:'multiplayer'},{name:'cars'},{name:'competitive'}], rating: 4.2, description_raw: 'Soccer with rocket-powered cars. Fast-paced competitive gameplay with no objectionable content. Features in-game purchases for cosmetics.', esrb_rating: {name:'Everyone'} },
+  { id: 1017, name: 'Call of Duty: Modern Warfare III', slug: 'call-of-duty-modern-warfare-iii', released: '2023-11-10', background_image: '', genres: [{name:'Shooter'},{name:'Action'}], tags: [{name:'shooter'},{name:'multiplayer'},{name:'violence'},{name:'war'}], rating: 3.5, description_raw: 'A realistic military shooter with intense combat. Contains strong violence, blood, and war themes. Multiplayer focused with cosmetic purchases.', esrb_rating: {name:'Mature'} },
+  { id: 1018, name: 'League of Legends', slug: 'league-of-legends', released: '2009-10-27', background_image: '', genres: [{name:'Strategy'},{name:'MOBA'}], tags: [{name:'multiplayer'},{name:'competitive'},{name:'magic'},{name:'online-only'}], rating: 3.8, description_raw: 'A competitive MOBA with champions that use magic and abilities. Contains fantasy violence, some dark themes, and heavy microtransaction focus.', esrb_rating: {name:'Teen'} },
+  { id: 1019, name: 'Animal Crossing: New Horizons', slug: 'animal-crossing-new-horizons', released: '2020-03-20', background_image: '', genres: [{name:'Simulation'},{name:'Casual'}], tags: [{name:'relaxing'},{name:'singleplayer'},{name:'multiplayer'},{name:'family'},{name:'creative'}], rating: 4.6, description_raw: 'A life simulation game on a deserted island. Build, decorate, fish, and befriend animal villagers. Completely wholesome and family-friendly.', esrb_rating: {name:'Everyone'} },
+  { id: 1020, name: 'Pokemon Scarlet', slug: 'pokemon-scarlet', released: '2022-11-18', background_image: '', genres: [{name:'RPG'},{name:'Adventure'}], tags: [{name:'singleplayer'},{name:'multiplayer'},{name:'kids'},{name:'family'},{name:'creatures'}], rating: 4.0, description_raw: 'A family-friendly RPG where you catch and train Pokemon. Explore an open world, battle gym leaders, and become champion. Mild fantasy violence only.', esrb_rating: {name:'Everyone'} },
+];
+
+/* ============================================================
+   HALAL SCREENER ENGINE
+   ============================================================ */
+const HARAM_KEYWORDS = ['casino','gambling','betting','poker','slots','guts','gore','nudity','nude','sexual','erotic','nsfw','idol worship','occult ritual','dead or alive','doa'];
+const CAUTION_KEYWORDS = ['magic','sorcery','spells','demons','demon','mythology','gory','blood','alcohol','drugs','witchcraft','necromancy','polytheism','idol','lootbox','gacha','microtransaction','dark-fantasy','violence','war'];
+const HALAL_KEYWORDS = ['puzzle','racing','sports','simulator','educational','clean','family','kids','platformer','strategy','building','crafting','farm','cooking','relaxing','creative','soccer','tennis','golf','racing','casual','party','deduction','co-op'];
+
+function screenGame(game) {
+  const text = [game.name, game.description_raw || '', ...(game.genres||[]).map(g=>g.name), ...(game.tags||[]).map(t=>t.name)].join(' ').toLowerCase();
+  const esrb = (game.esrb_rating?.name || '').toLowerCase();
+  let score = 70; // baseline
+  const flags = {
+    faithImpact: { status: 'safe', detail: 'No detected faith-related concerns' },
+    financialEthics: { status: 'safe', detail: 'No detected gambling or financial concerns' },
+    modesty: { status: 'safe', detail: 'No detected modesty concerns' },
+    violenceLevel: { status: 'safe', detail: 'No detected violence concerns' },
+  };
+  const tags = [];
+
+  // Check haram keywords
+  for (const kw of HARAM_KEYWORDS) {
+    if (text.includes(kw)) { tags.push('haram:' + kw); score -= 20; }
+  }
+  // Check caution keywords
+  for (const kw of CAUTION_KEYWORDS) {
+    if (text.includes(kw)) { tags.push('caution:' + kw); score -= 8; }
+  }
+  // Check halal keywords
+  for (const kw of HALAL_KEYWORDS) {
+    if (text.includes(kw)) { tags.push('halal:' + kw); score += 4; }
+  }
+
+  // ESRB-based adjustments
+  if (esrb.includes('mature')) { score -= 25; tags.push('esrb:mature'); }
+  else if (esrb.includes('teen')) { score -= 8; tags.push('esrb:teen'); }
+  else if (esrb.includes('everyone 10+')) { tags.push('esrb:e10'); }
+  else if (esrb.includes('everyone')) { score += 5; tags.push('esrb:everyone'); }
+
+  // Faith Impact
+  const faithBad = ['magic','sorcery','spells','mythology','demons','demon','witchcraft','necromancy','polytheism','idol','shirk'];
+  if (faithBad.some(k => text.includes(k))) {
+    flags.faithImpact.status = tags.some(t => t.includes('haram')) ? 'haram' : 'caution';
+    const found = faithBad.filter(k => text.includes(k)).slice(0, 3).join(', ');
+    flags.faithImpact.detail = `Contains: ${found}`;
+  }
+
+  // Financial Ethics
+  const finBad = ['casino','gambling','betting','poker','slots','lootbox','gacha','microtransaction'];
+  if (finBad.some(k => text.includes(k))) {
+    flags.financialEthics.status = ['casino','gambling','betting','poker','slots'].some(k => text.includes(k)) ? 'haram' : 'caution';
+    const found = finBad.filter(k => text.includes(k)).slice(0, 3).join(', ');
+    flags.financialEthics.detail = `Contains: ${found}`;
+  }
+
+  // Modesty
+  const modestyBad = ['nudity','nude','sexual','erotic','nsfw','ecchi','suggestive'];
+  if (modestyBad.some(k => text.includes(k))) {
+    flags.modesty.status = 'haram';
+    const found = modestyBad.filter(k => text.includes(k)).slice(0, 3).join(', ');
+    flags.modesty.detail = `Contains: ${found}`;
+  }
+
+  // Violence
+  const violBad = ['gore','guts','blood','violence','gory','fatality','mortal kombat','realistic'];
+  const violMild = ['cartoon','colorful','family','kids','mild'];
+  if (violBad.some(k => text.includes(k))) {
+    flags.violenceLevel.status = ['gore','guts','gory','fatality','mortal kombat'].some(k => text.includes(k)) ? 'haram' : 'caution';
+    const found = violBad.filter(k => text.includes(k)).slice(0, 3).join(', ');
+    flags.violenceLevel.detail = `Contains: ${found}`;
+  } else if (violMild.some(k => text.includes(k))) {
+    flags.violenceLevel.detail = 'Mild/cartoonish violence only';
+  }
+
+  // Clamp score
+  score = Math.max(0, Math.min(100, score));
+
+  // Determine verdict
+  let verdict = 'halal';
+  if (score < 35) verdict = 'haram';
+  else if (score < 65) verdict = 'caution';
+
+  // Override if explicit haram flags exist
+  if (tags.some(t => t.startsWith('haram:'))) {
+    if (verdict !== 'haram') { verdict = 'caution'; score = Math.min(score, 40); }
+  }
+
+  return { verdict, score, flags, tags };
+}
+
+/* ============================================================
+   SAFETY TIPS GENERATOR
+   ============================================================ */
+function generateTips(screenResult, game) {
+  const tips = [];
+  if (screenResult.flags.faithImpact.status !== 'safe') {
+    tips.push('This game contains fantasy/dark magic elements. If you choose to play, remember this is fictional and does not reflect Islamic beliefs.');
+  }
+  if (screenResult.flags.financialEthics.status !== 'safe') {
+    tips.push('Contains lootbox/gacha/microtransaction mechanics. Be cautious of gambling-like systems that encourage spending.');
+  }
+  if (screenResult.flags.modesty.status !== 'safe') {
+    tips.push('Features sexualized or suggestive content. Consider whether this aligns with your personal standards.');
+  }
+  if (screenResult.flags.violenceLevel.status === 'haram') {
+    tips.push('Contains extreme/graphic violence. Consider whether this aligns with your personal standards.');
+  } else if (screenResult.flags.violenceLevel.status === 'caution') {
+    tips.push('Contains moderate violence. Most gameplay focuses on other elements.');
+  }
+  if (tips.length === 0) {
+    tips.push('This game appears to be free of major content concerns. Enjoy responsibly!');
+  }
+  // Music tip for certain genres
+  const genres = (game.genres||[]).map(g=>g.name.toLowerCase()).join(' ');
+  if (genres.includes('rpg') || genres.includes('action') || genres.includes('adventure')) {
+    tips.push('If in-game music is a concern, most games allow you to mute it in the audio settings.');
+  }
+  return tips;
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let currentGames = [];
+let currentFilter = 'all';
+let currentSort = 'relevance';
+let searchCache = {};
+let recentSearches = JSON.parse(sessionStorage.getItem('hg_recent') || '[]');
+let debounceTimer = null;
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const $searchInput = document.getElementById('search-input');
+const $results = document.getElementById('results');
+const $emptyState = document.getElementById('empty-state');
+const $skeletons = document.getElementById('skeletons');
+const $resultCount = document.getElementById('result-count');
+const $sortSelect = document.getElementById('sort-select');
+const $modal = document.getElementById('detail-modal');
+const $detailContent = document.getElementById('detail-content');
+const $loader = document.getElementById('loader');
+
+/* ============================================================
+   API FETCH
+   ============================================================ */
+async function fetchGames(query) {
+  if (searchCache[query]) return searchCache[query];
+  try {
+    const key = CONFIG.RAWG_API_KEY;
+    if (!key || key === 'YOUR_RAWG_API_KEY_HERE') throw new Error('No API key');
+    const res = await fetch(`${CONFIG.API_BASE}/games?key=${key}&search=${encodeURIComponent(query)}&page_size=20`);
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    const games = data.results || [];
+    searchCache[query] = games;
+    return games;
+  } catch {
+    // Fallback: filter mock database
+    const q = query.toLowerCase();
+    return MOCK_GAMES.filter(g =>
+      g.name.toLowerCase().includes(q) ||
+      (g.description_raw||'').toLowerCase().includes(q) ||
+      (g.genres||[]).some(gen => gen.name.toLowerCase().includes(q)) ||
+      (g.tags||[]).some(t => t.name.toLowerCase().includes(q))
+    );
+  }
+}
+
+/* ============================================================
+   SCREEN & RENDER
+   ============================================================ */
+function screenAll(games) {
+  return games.map(g => ({ ...g, screen: screenGame(g) }));
+}
+
+function getFilteredSorted(games) {
+  let filtered = games;
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(g => g.screen.verdict === currentFilter);
+  }
+  if (currentSort === 'score') {
+    filtered.sort((a, b) => b.screen.score - a.screen.score);
+  } else if (currentSort === 'name') {
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return filtered;
+}
+
+function renderCard(game) {
+  const s = game.screen;
+  const verdictClass = `verdict-${s.verdict}`;
+  const verdictLabel = s.verdict === 'halal' ? 'Halal Friendly' : s.verdict === 'caution' ? 'Caution' : 'Avoid';
+  const scoreColor = s.verdict === 'halal' ? 'var(--accent-halal)' : s.verdict === 'caution' ? 'var(--accent-caution)' : 'var(--accent-haram)';
+  const img = game.background_image || `https://via.placeholder.com/460x215/12192a/818cf8?text=${encodeURIComponent(game.name)}`;
+  const year = game.released ? game.released.split('-')[0] : '';
+  const genres = (game.genres||[]).map(g=>g.name).join(', ');
+
+  return `
+    <article class="game-card" onclick="openDetail(${game.id})" tabindex="0" role="button" aria-label="View details for ${game.name}">
+      <div style="aspect-ratio:16/9; overflow:hidden; background:var(--bg-card);">
+        <img src="${img}" alt="${game.name} cover" loading="lazy" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">
+      </div>
+      <div style="padding:1rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <span class="verdict-badge ${verdictClass}">${verdictLabel}</span>
+          <span style="color:var(--muted); font-size:0.75rem;">${year}</span>
+        </div>
+        <h3 style="color:var(--heading); font-size:1rem; font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${game.name}</h3>
+        <p style="color:var(--muted); font-size:0.8125rem; margin-bottom:8px;">${genres}</p>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="score-bar" style="flex:1;">
+            <div class="score-fill" style="width:${s.score}%; background:${scoreColor};"></div>
+          </div>
+          <span style="color:${scoreColor}; font-size:0.75rem; font-weight:600;">${s.score}/100</span>
+        </div>
+      </div>
+    </article>`;
+}
+
+function renderResults(games) {
+  const screened = screenAll(games);
+  currentGames = screened;
+  const filtered = getFilteredSorted(screened);
+  $resultCount.textContent = `${filtered.length} game${filtered.length !== 1 ? 's' : ''} found`;
+  if (filtered.length === 0) {
+    $results.innerHTML = '';
+    $emptyState.style.display = 'block';
+  } else {
+    $emptyState.style.display = 'none';
+    $results.innerHTML = filtered.map(renderCard).join('');
+  }
+}
+
+function showSkeletons() {
+  $skeletons.style.display = 'grid';
+  $skeletons.innerHTML = Array(6).fill(`
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+      <div class="skeleton" style="aspect-ratio:16/9;"></div>
+      <div style="padding:1rem;">
+        <div class="skeleton" style="height:20px; width:40%; margin-bottom:8px;"></div>
+        <div class="skeleton" style="height:16px; width:70%; margin-bottom:6px;"></div>
+        <div class="skeleton" style="height:14px; width:50%;"></div>
+      </div>
+    </div>`).join('');
+  $results.innerHTML = '';
+  $emptyState.style.display = 'none';
+}
+
+function hideSkeletons() { $skeletons.style.display = 'none'; $skeletons.innerHTML = ''; }
+
+/* ============================================================
+   SEARCH HANDLER
+   ============================================================ */
+async function handleSearch() {
+  const query = $searchInput.value.trim();
+  if (!query) {
+    // Show some popular/mock games when empty
+    renderResults(MOCK_GAMES);
+    return;
+  }
+  showSkeletons();
+  const games = await fetchGames(query);
+  hideSkeletons();
+  renderResults(games);
+
+  // Save to recent
+  recentSearches = [query, ...recentSearches.filter(s => s !== query)].slice(0, 10);
+  sessionStorage.setItem('hg_recent', JSON.stringify(recentSearches));
+}
+
+$searchInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(handleSearch, 300);
+});
+$searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { $searchInput.value = ''; handleSearch(); }
+  if (e.key === 'Enter') { clearTimeout(debounceTimer); handleSearch(); }
+});
+
+/* ============================================================
+   FILTER CHIPS
+   ============================================================ */
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.dataset.filter;
+    // Re-render with current data
+    if (currentGames.length > 0) {
+      const filtered = getFilteredSorted(currentGames);
+      $resultCount.textContent = `${filtered.length} game${filtered.length !== 1 ? 's' : ''} found`;
+      if (filtered.length === 0) {
+        $results.innerHTML = '';
+        $emptyState.style.display = 'block';
+      } else {
+        $emptyState.style.display = 'none';
+        $results.innerHTML = filtered.map(renderCard).join('');
+      }
+    }
+  });
+});
+
+/* ============================================================
+   SORT
+   ============================================================ */
+$sortSelect.addEventListener('change', () => {
+  currentSort = $sortSelect.value;
+  if (currentGames.length > 0) {
+    const filtered = getFilteredSorted(currentGames);
+    $results.innerHTML = filtered.map(renderCard).join('');
+  }
+});
+
+/* ============================================================
+   DETAIL MODAL
+   ============================================================ */
+function openDetail(gameId) {
+  const game = MOCK_GAMES.find(g => g.id === gameId) || currentGames.find(g => g.id === gameId);
+  if (!game) return;
+  const s = game.screen || screenGame(game);
+  const tips = generateTips(s, game);
+  const verdictLabel = s.verdict === 'halal' ? 'Halal Friendly' : s.verdict === 'caution' ? 'Caution' : 'Avoid';
+  const scoreColor = s.verdict === 'halal' ? 'var(--accent-halal)' : s.verdict === 'caution' ? 'var(--accent-caution)' : 'var(--accent-haram)';
+  const img = game.background_image || `https://via.placeholder.com/640x360/12192a/818cf8?text=${encodeURIComponent(game.name)}`;
+  const year = game.released ? game.released.split('-')[0] : '';
+  const genres = (game.genres||[]).map(g=>g.name).join(', ');
+  const esrb = game.esrb_rating?.name || 'Not rated';
+
+  function statusIcon(status) {
+    if (status === 'safe') return '<div class="breakdown-icon icon-safe">✓</div>';
+    if (status === 'caution') return '<div class="breakdown-icon icon-caution">!</div>';
+    return '<div class="breakdown-icon icon-haram">✗</div>';
+  }
+
+  $detailContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    <div style="aspect-ratio:16/9; border-radius:10px; overflow:hidden; margin-bottom:1.25rem; background:var(--bg-deep);">
+      <img src="${img}" alt="${game.name}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+      <h2 style="color:var(--heading); font-size:1.5rem; font-weight:700;">${game.name}</h2>
+      <span style="color:var(--muted); font-size:0.875rem;">${year}</span>
+    </div>
+    <p style="color:var(--muted); font-size:0.875rem; margin-bottom:0.75rem;">${genres} · ESRB: ${esrb}</p>
+
+    <!-- Verdict -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:1rem;">
+      <span class="verdict-badge verdict-${s.verdict}" style="font-size:0.9375rem; padding:6px 16px;">${verdictLabel}</span>
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+          <span style="font-size:0.75rem; color:var(--muted);">Halal Score</span>
+          <span style="font-size:0.8125rem; font-weight:600; color:${scoreColor};">${s.score}/100</span>
+        </div>
+        <div class="score-bar" style="height:8px;">
+          <div class="score-fill" style="width:${s.score}%; background:${scoreColor};"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <p style="color:var(--text); font-size:0.9375rem; line-height:1.6; margin-bottom:1.25rem;">${game.description_raw || 'No description available.'}</p>
+
+    <!-- Breakdown -->
+    <h3 style="color:var(--heading); font-size:1rem; font-weight:600; margin-bottom:0.75rem;">Content Breakdown</h3>
+    <div style="margin-bottom:1.25rem;">
+      <div class="breakdown-row">
+        ${statusIcon(s.flags.faithImpact.status)}
+        <div style="flex:1;">
+          <div style="color:var(--heading); font-size:0.875rem; font-weight:500;">Faith Impact (Shirk/Magic)</div>
+          <div style="color:var(--muted); font-size:0.8125rem;">${s.flags.faithImpact.detail}</div>
+        </div>
+      </div>
+      <div class="breakdown-row">
+        ${statusIcon(s.flags.financialEthics.status)}
+        <div style="flex:1;">
+          <div style="color:var(--heading); font-size:0.875rem; font-weight:500;">Financial Ethics (Gambling/Lootboxes)</div>
+          <div style="color:var(--muted); font-size:0.8125rem;">${s.flags.financialEthics.detail}</div>
+        </div>
+      </div>
+      <div class="breakdown-row">
+        ${statusIcon(s.flags.modesty.status)}
+        <div style="flex:1;">
+          <div style="color:var(--heading); font-size:0.875rem; font-weight:500;">Modesty (Nudity/Sensuality)</div>
+          <div style="color:var(--muted); font-size:0.8125rem;">${s.flags.modesty.detail}</div>
+        </div>
+      </div>
+      <div class="breakdown-row">
+        ${statusIcon(s.flags.violenceLevel.status)}
+        <div style="flex:1;">
+          <div style="color:var(--heading); font-size:0.875rem; font-weight:500;">Violence Level</div>
+          <div style="color:var(--muted); font-size:0.8125rem;">${s.flags.violenceLevel.detail}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <h3 style="color:var(--heading); font-size:1rem; font-weight:600; margin-bottom:0.5rem;">How to Play Safely</h3>
+    <div class="tip-box">
+      ${tips.map(t => `<p style="color:var(--text); font-size:0.875rem; line-height:1.6; margin-bottom:0.5rem;">💡 ${t}</p>`).join('')}
+    </div>
+
+    <!-- Detected tags -->
+    ${s.tags.length > 0 ? `
+    <details style="margin-top:1rem;">
+      <summary style="color:var(--muted); font-size:0.8125rem; cursor:pointer; padding:4px 0;">Show detected tags (${s.tags.length})</summary>
+      <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;">
+        ${s.tags.map(t => `<span style="background:var(--border); color:var(--muted); padding:2px 8px; border-radius:4px; font-size:0.6875rem;">${t}</span>`).join('')}
+      </div>
+    </details>` : ''}
+  `;
+  $modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  $modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+$modal.addEventListener('click', (e) => { if (e.target === $modal) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+/* ============================================================
+   INIT
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  renderResults(MOCK_GAMES);
+  setTimeout(() => $loader.classList.add('hide'), 400);
+});
+</script>
 </body>
 </html>
