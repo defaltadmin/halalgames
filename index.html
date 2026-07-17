@@ -48,38 +48,7 @@
     "featureList": ["Halal game search", "Islamic content rating", "RAWG database integration", "Faith impact analysis", "Gambling detection", "Violence screening"]
   }
   </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Are video games halal in Islam?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Video games are generally permissible in Islam as long as they do not contain haram elements such as gambling, excessive violence, nudity, polytheistic themes, or content that distracts from religious obligations. Games focused on strategy, puzzles, sports, and creativity are typically considered halal-friendly."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What makes a video game haram?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A video game may be considered haram if it contains gambling mechanics (lootboxes, gacha), sexual or nude content, extreme gore, polytheistic religious themes (worshipping false gods, witchcraft), or excessive time-wasting that leads to neglecting prayers."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What are the best halal games for Muslim gamers?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Popular halal-friendly games include Minecraft (sandbox/creative), Stardew Valley (farming), FIFA/EA Sports FC (sports), Mario Kart (racing), Animal Crossing (life sim), Tetris (puzzle), and Among Us (social deduction). These games are free of gambling, excessive violence, and objectionable content."
-        }
-      }
-    ]
-  }
-  </script>
+
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,7 +70,7 @@
   <style>
     :root {
       --bg-deep: #06070b; --bg-surface: #0c1018; --bg-card: #12192a; --border: #1a2642;
-      --text: #c8d6e5; --heading: #f0f4f8; --muted: #6b7fa3;
+      --text: #c8d6e5; --heading: #f0f4f8; --muted: #7d91ad;
       --accent-halal: #10B981; --accent-caution: #F59E0B; --accent-haram: #EF4444; --accent-brand: #818cf8;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -219,16 +188,16 @@
       <!-- Search -->
       <div style="max-width: 620px; margin: 0 auto; position: relative;">
         <svg style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" id="search-input" placeholder="Search for a game (e.g. Minecraft, GTA, FIFA...)" autocomplete="off" autofocus>
+        <input type="text" id="search-input" aria-label="Search for a video game" placeholder="Search for a game (e.g. Minecraft, GTA, FIFA...)" autocomplete="off" autofocus>
         <kbd style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:var(--border); color:var(--muted); padding:3px 8px; border-radius:5px; font-size:0.6875rem; font-family:monospace;">ESC</kbd>
       </div>
 
       <!-- Filters -->
       <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:1.25rem;">
-        <button class="chip active" data-filter="all">All Games</button>
-        <button class="chip" data-filter="halal">Halal Friendly</button>
-        <button class="chip" data-filter="caution">Caution</button>
-        <button class="chip" data-filter="haram">Avoid</button>
+        <button class="chip active" data-filter="all" aria-pressed="true">All Games</button>
+        <button class="chip" data-filter="halal" aria-pressed="false">Halal Friendly</button>
+        <button class="chip" data-filter="caution" aria-pressed="false">Caution</button>
+        <button class="chip" data-filter="haram" aria-pressed="false">Avoid</button>
       </div>
     </header>
 
@@ -244,8 +213,8 @@
 
     <!-- Sort -->
     <div style="max-width:960px; margin:1.5rem auto 0; padding:0 1rem; display:flex; align-items:center; justify-content:space-between;">
-      <div id="result-count" style="color:var(--muted); font-size:0.875rem;"></div>
-      <select id="sort-select" style="background:rgba(18,25,42,0.8); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px; font-size:0.8125rem; outline:none; cursor:pointer;">
+      <div id="result-count" aria-live="polite" style="color:var(--muted); font-size:0.875rem;"></div>
+      <select id="sort-select" aria-label="Sort search results" style="background:rgba(18,25,42,0.8); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px; font-size:0.8125rem; outline:none; cursor:pointer;">
         <option value="relevance">Sort: Relevance</option>
         <option value="score">Sort: Halal Score</option>
         <option value="name">Sort: Name A-Z</option>
@@ -298,7 +267,7 @@
   </div>
 
   <!-- Detail modal -->
-  <div class="modal-overlay" id="detail-modal">
+  <div class="modal-overlay" id="detail-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-content" id="detail-content"></div>
   </div>
 
@@ -306,6 +275,27 @@
 /* ============================================================
    CONFIG
    ============================================================ */
+/* XSS-safe HTML escaping */
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+/* Dead-service-proof placeholder (no external deps) */
+function placeholderImg(name, w, h) {
+  w = w || 460; h = h || 215;
+  const label = esc(name.substring(0, 18));
+  return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='" + w + "' height='" + h + "'%3E%3Crect width='" + w + "' height="' + h + "' fill='%2312192a'/%3E%3Ctext x='" + (w/2) + "' y='" + (h/2) + "' text-anchor='middle' dominant-baseline='central' fill='%237d91ad' font-family='system-ui' font-size='14'%3E" + label + "%3C/text%3E%3C/svg%3E";
+}
+
+/* Toast notification for API fallback */
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:rgba(18,25,42,0.95);border:1px solid var(--border);color:var(--muted);padding:10px 20px;border-radius:10px;font-size:0.8125rem;z-index:200;backdrop-filter:blur(8px);transition:opacity 0.3s;'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 4000);
+}
+
+let searchController;
+
 const CONFIG = {
   RAWG_API_KEY: '772db6db7cf24515af0abca4b3c2c403',
   API_BASE: 'https://api.rawg.io/api',
@@ -388,7 +378,7 @@ function getStoreLinks(game) {
    HALAL SCREENER ENGINE
    ============================================================ */
 const HARAM_KEYWORDS = ['casino','gambling','betting','poker','slots','guts','gore','nudity','nude','sexual','erotic','nsfw','idol worship','occult ritual','dead or alive'];
-const CAUTION_KEYWORDS = ['magic','sorcery','spells','demons','demon','mythology','gory','blood','alcohol','drugs','witchcraft','necromancy','polytheism','idol','lootbox','gacha','microtransaction','dark-fantasy','violence','war'];
+const CAUTION_KEYWORDS = ['magic','sorcery','spells','demons','demon','mythology','gory','blood','alcohol','drugs','witchcraft','necromancy','polytheism','idol worship','lootbox','gacha','microtransaction','dark-fantasy','violence','war game'];
 const HALAL_KEYWORDS = ['puzzle','racing','sports','simulator','educational','clean','family','kids','platformer','strategy','building','crafting','farm','cooking','relaxing','creative','soccer','tennis','golf','casual','party','deduction','co-op','sandbox'];
 
 function screenGame(game) {
@@ -411,7 +401,7 @@ function screenGame(game) {
   else if (esrb.includes('teen')) { score -= 8; tags.push('esrb:teen'); }
   else if (esrb.includes('everyone')) { score += 5; tags.push('esrb:everyone'); }
 
-  const faithBad = ['magic','sorcery','spells','mythology','demons','demon','witchcraft','necromancy','polytheism','idol','shirk'];
+  const faithBad = ['magic','sorcery','spells','mythology','demons','demon','witchcraft','necromancy','polytheism','idol worship','shirk'];
   if (faithBad.some(k => text.includes(k))) {
     flags.faithImpact.status = tags.some(t => t.includes('haram')) ? 'haram' : 'caution';
     flags.faithImpact.detail = 'Contains: ' + faithBad.filter(k => text.includes(k)).slice(0, 3).join(', ');
@@ -500,7 +490,7 @@ function searchFor(slug) {
 /* ============================================================
    API FETCH
    ============================================================ */
-async function fetchGames(query) {
+async function fetchGames(query) { if (searchController) searchController.abort(); searchController = new AbortController();
   if (searchCache[query]) return searchCache[query];
   try {
     const key = CONFIG.RAWG_API_KEY;
@@ -516,7 +506,7 @@ async function fetchGames(query) {
     }));
     searchCache[query] = games;
     return games;
-  } catch {
+  } catch (e) { if (e.name !== 'AbortError') showToast('Using offline database');
     const q = query.toLowerCase();
     return MOCK_GAMES.filter(g =>
       g.name.toLowerCase().includes(q) ||
@@ -545,7 +535,7 @@ function renderCard(game) {
   const vClass = `verdict-${s.verdict}`;
   const vLabel = s.verdict === 'halal' ? 'Halal Friendly' : s.verdict === 'caution' ? 'Caution' : 'Avoid';
   const sColor = s.verdict === 'halal' ? 'var(--accent-halal)' : s.verdict === 'caution' ? 'var(--accent-caution)' : 'var(--accent-haram)';
-  const img = game.background_image || `https://via.placeholder.com/460x215/12192a/818cf8?text=${encodeURIComponent(game.name)}`;
+  const img = game.background_image || placeholderImg(game.name);
   const year = game.released ? game.released.split('-')[0] : '';
   const genres = (game.genres||[]).map(g=>g.name).join(', ');
 
@@ -611,7 +601,7 @@ $searchInput.addEventListener('keydown', (e) => {
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
+    chip.classList.add('active'); chip.setAttribute('aria-pressed','true');
     currentFilter = chip.dataset.filter;
     if (currentGames.length > 0) {
       const filtered = getFilteredSorted(currentGames);
@@ -637,7 +627,7 @@ function openDetail(gameId) {
   const tips = generateTips(s, game);
   const vLabel = s.verdict === 'halal' ? 'Halal Friendly' : s.verdict === 'caution' ? 'Caution' : 'Avoid';
   const sColor = s.verdict === 'halal' ? 'var(--accent-halal)' : s.verdict === 'caution' ? 'var(--accent-caution)' : 'var(--accent-haram)';
-  const img = game.background_image || `https://via.placeholder.com/640x360/12192a/818cf8?text=${encodeURIComponent(game.name)}`;
+  const img = game.background_image || placeholderImg(game.name, 640, 360);
   const year = game.released ? game.released.split('-')[0] : '';
   const genres = (game.genres||[]).map(g=>g.name).join(', ');
   const esrb = game.esrb_rating?.name || 'Not rated';
@@ -709,3 +699,8 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
+
+
+
+
