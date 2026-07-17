@@ -1,0 +1,9 @@
+.git
+.wrangler
+.github
+node_modules
+wrangler.jsonc
+wrangler.toml
+*.md
+.DS_Store
+Thumbs.db
