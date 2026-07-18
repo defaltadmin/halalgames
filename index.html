@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; base-uri 'self';">
   <title>HalalGames Guide — Search Any Game for Islamic Content Rating | Free Halal Game Screener</title>
   <meta name="description" content="Search any video game and instantly get an Islamic content rating. Free halal game screener checking faith impact, gambling mechanics, modesty, and violence levels. Instant Islamic content ratings for 50+ games. Know before you play.">
   <meta name="keywords" content="halal games, halal video games, muslim friendly games, haram games, islamic gaming, games for muslims, halal game list, gaming in islam, is gaming haram, halal game checker">
@@ -23,542 +24,53 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{fontFamily:{body:['Inter','system-ui','sans-serif'],heading:['Space Grotesk','Inter','system-ui','sans-serif']},colors:{deep:'#06070b',surface:'#0c1018',card:'#12192a',border:'#1a2642',halal:'#10B981',caution:'#F59E0B',haram:'#EF4444',brand:'#818cf8'}}}}</script>
-  <style>
-    :root{--bg:#06070b;--surface:#0c1018;--card:#12192a;--border:#1a2642;--text:#c8d6e5;--heading:#f0f4f8;--muted:#7d91ad;--halal:#10B981;--caution:#F59E0B;--haram:#EF4444;--brand:#818cf8}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth}
-    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh}
-    h1,h2,h3,h4{font-family:'Space Grotesk','Inter',system-ui,sans-serif}
-    .animated-bg{position:fixed;inset:0;z-index:0;overflow:hidden}
-    .animated-bg::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 20% 50%,rgba(16,185,129,.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(129,140,248,.06) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(239,68,68,.04) 0%,transparent 50%);animation:bgDrift 20s ease-in-out infinite alternate}
-    @keyframes bgDrift{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(-3%,2%) rotate(3deg)}}
-    .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.4;animation:orbFloat 15s ease-in-out infinite alternate;pointer-events:none;z-index:0}
-    .orb-1{width:300px;height:300px;background:rgba(16,185,129,.12);top:10%;left:5%}
-    .orb-2{width:250px;height:250px;background:rgba(129,140,248,.1);top:60%;right:5%;animation-delay:-5s}
-    .orb-3{width:200px;height:200px;background:rgba(245,158,11,.08);bottom:10%;left:40%;animation-delay:-10s}
-    @keyframes orbFloat{0%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-20px) scale(1.1)}100%{transform:translate(-20px,30px) scale(.95)}}
-    .content-wrap{position:relative;z-index:1}
-    #loader{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .4s}
-    #loader.hide{opacity:0;pointer-events:none}
-    .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    #search-input{background:rgba(18,25,42,.9);backdrop-filter:blur(12px);border:1px solid var(--border);color:var(--heading);font-size:1.125rem;padding:1rem 1.25rem 1rem 3rem;border-radius:16px;width:100%;outline:none;transition:all .25s}
-    #search-input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(129,140,248,.2),0 8px 32px rgba(0,0,0,.3)}
-    #search-input::placeholder{color:var(--muted)}
-    .game-card{background:rgba(18,25,42,.85);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s;position:relative}
-    .game-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4);border-color:rgba(129,140,248,.3)}
-    .verdict-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
-    .verdict-halal{background:rgba(16,185,129,.15);color:var(--halal)}
-    .verdict-caution{background:rgba(245,158,11,.15);color:var(--caution)}
-    .verdict-haram{background:rgba(239,68,68,.15);color:var(--haram)}
-    .score-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
-    .score-fill{height:100%;border-radius:3px;transition:width .5s ease}
-    .chip{display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;font-size:.8125rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s}
-    .chip:hover{border-color:var(--brand);color:var(--heading)}
-    .chip.active{background:rgba(129,140,248,.15);border-color:var(--brand);color:var(--brand)}
-    .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(6,7,11,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .25s}
-    .modal-overlay.open{opacity:1;pointer-events:auto}
-    .modal-content{background:rgba(18,25,42,.95);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:20px;max-width:660px;width:100%;max-height:90vh;overflow-y:auto;padding:2rem;position:relative}
-    .modal-close{position:absolute;top:1rem;right:1rem;width:36px;height:36px;border-radius:10px;background:var(--border);color:var(--muted);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;z-index:2}
-    .modal-close:hover{color:var(--heading);background:rgba(129,140,248,.2)}
-    .vote-btn{display:none!important; /* hidden until backend */;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:.75rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s}
-    .vote-btn:hover{border-color:var(--brand);color:var(--heading)}
-    .vote-btn.voted-up{border-color:var(--halal);color:var(--halal);background:rgba(16,185,129,.1)}
-    .vote-btn.voted-down{border-color:var(--haram);color:var(--haram);background:rgba(239,68,68,.1)}
-    .report-btn{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;background:rgba(0,0,0,.5);color:var(--muted);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0;transition:all .2s;z-index:2}
-    .game-card:hover .report-btn{opacity:1}
-    .report-btn:hover{color:var(--haram);background:rgba(239,68,68,.2)}
-    .tip-box{background:rgba(129,140,248,.06);border:1px solid rgba(129,140,248,.15);border-radius:12px;padding:14px 18px}
-    .skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(26,38,66,.5) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
-    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:rgba(18,25,42,.95);border:1px solid var(--border);color:var(--muted);padding:10px 20px;border-radius:10px;font-size:.8125rem;z-index:200;backdrop-filter:blur(8px);transition:opacity .3s;pointer-events:none}
-    .toast.hide{opacity:0}
-    @media(max-width:640px){.game-cards{grid-template-columns:1fr!important}.modal-content{padding:1.25rem;border-radius:16px}}
-    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}.animated-bg::before{animation:none}.orb{animation:none}}
-  </style>
-</head>
-<body>
-  <div class="animated-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
-  <div id="loader"><div class="spinner"></div></div>
-
-  <div class="content-wrap">
-    <!-- Hero -->
-    <header style="text-align:center;padding:2rem 1rem .5rem">
-      <div style="margin-bottom:.75rem">
-        <svg width="72" height="72" viewBox="0 0 64 64" style="display:inline-block">
-          <rect width="64" height="64" rx="14" fill="#12192a" stroke="#1a2642" stroke-width="1"/>
-          <path d="M18 28c0-2.2 1.8-4 4-4h20c2.2 0 4 1.8 4 4v8c0 2.2-1.8 4-4 4H22c-2.2 0-4-1.8-4-4v-8z" fill="none" stroke="#10B981" stroke-width="2"/>
-          <circle cx="25" cy="32" r="2" fill="#10B981"/>
-          <circle cx="39" cy="32" r="2" fill="#10B981"/>
-          <path d="M30 20l2-4 2 4" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="32" cy="14" r="1.5" fill="#818cf8"/>
-        </svg>
-      </div>
-      <h1 style="font-size:clamp(1.75rem,5vw,2.75rem);color:var(--heading);font-weight:800;letter-spacing:-.02em;margin-bottom:.375rem">HalalGames Guide</h1>
-      <p style="color:var(--muted);font-size:1.0625rem;max-width:520px;margin:0 auto .5rem;line-height:1.6">Know before you play. Search any video game for an instant Islamic content rating — faith impact, gambling, modesty, and violence.</p>
-      <p style="color:var(--muted);font-size:.8125rem;max-width:480px;margin:0 auto 1.5rem;line-height:1.5">Search 50+ games with instant Islamic content ratings. Free, open source, no tracking.</p>
-      <div style="max-width:620px;margin:0 auto;position:relative">
-        <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" id="search-input" aria-label="Search for a video game" placeholder="Search for a game (e.g. Minecraft, GTA, FIFA...)" autocomplete="off" autofocus>
-      </div>
-      <div id="filters" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1rem"></div>
-    </header>
-
-    <!-- Genre chips (populated by JS) -->
-    <div id="genre-chips" style="max-width:960px;margin:0 auto;padding:0 1rem;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem"></div>
-
-    <!-- Main content -->
-    <main style="max-width:960px;margin:0 auto;padding:0 1rem 2rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-        <h2 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Search Results</h2><div id="result-count" aria-live="polite" style="color:var(--muted);font-size:.875rem"></div>
-        <select id="sort-select" aria-label="Sort results" style="background:rgba(18,25,42,.8);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;font-size:.8125rem;outline:none;cursor:pointer">
-          <option value="relevance">Sort: Relevance</option>
-          <option value="score">Sort: Halal Score</option>
-          <option value="name">Sort: Name A-Z</option>
-          <option value="votes">Sort: Most Voted</option>
-        </select>
-      </div>
-      <div id="results" class="game-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem"></div>
-      <div id="empty-state" style="display:none;text-align:center;padding:3rem 1rem;color:var(--muted)">
-        <div style="font-size:3rem;margin-bottom:1rem">🔍</div>
-        <p style="font-size:1.125rem;color:var(--heading);margin-bottom:.5rem">No games found</p>
-        <p>Try a different search term</p>
-      </div>
-      <div id="skeletons" style="display:none"></div>
-    </main>
-
-    <!-- About section (SEO + fills dead space) -->
-    <section style="max-width:960px;margin:0 auto;padding:2rem 1rem;border-top:1px solid var(--border)">
-      <h2 style="color:var(--heading);font-size:1.5rem;font-weight:700;margin-bottom:1rem">About HalalGames Guide</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;color:var(--text);font-size:.9375rem;line-height:1.7">
-        <div>
-          <h3 style="color:var(--heading);font-size:1.0625rem;font-weight:600;margin-bottom:.5rem">What We Check</h3>
-          <p>Every game is screened across four Islamic content categories: <strong>Faith Impact</strong> (shirk, magic, polytheism), <strong>Financial Ethics</strong> (gambling, lootboxes, gacha), <strong>Modesty</strong> (nudity, sexual content), and <strong>Violence Level</strong> (graphic gore vs cartoonish). Each category gets a safe/caution/haram rating.</p>
-        </div>
-        <div>
-          <h3 style="color:var(--heading);font-size:1.0625rem;font-weight:600;margin-bottom:.5rem">How It Works</h3>
-          <p>Search any game title and our engine analyzes its genres, descriptions, and tags against an Islamic content matrix. Results are cross-referenced with community votes and reports. <strong>Anyone can vote</strong> on whether a verdict is accurate, and <strong>report errors</strong> for admin review.</p>
-        </div>
-        <div>
-          <h3 style="color:var(--heading);font-size:1.0625rem;font-weight:600;margin-bottom:.5rem">Disclaimer</h3>
-          <p>This is a community tool for informational purposes only. It does not constitute a religious ruling (fatwa). Islamic scholars may differ on specific games. Always consult qualified scholars for personal religious guidance.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Resources -->
-    <section style="max-width:960px;margin:0 auto;padding:0 1rem 2rem">
-      <h2 style="color:var(--heading);font-size:1.25rem;font-weight:700;margin-bottom:1rem">Islamic Gaming Resources</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.75rem">
-        <a href="https://islamqa.info/en/answers/22305" target="_blank" rel="noopener" style="background:rgba(18,25,42,.7);border:1px solid var(--border);border-radius:12px;padding:1rem;text-decoration:none;transition:all .2s" onmouseover="this.style.borderColor='rgba(129,140,248,.3)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="color:var(--brand);font-weight:600;font-size:.9375rem;margin-bottom:4px">IslamQA — Games in Islam</div>
-          <div style="color:var(--muted);font-size:.8125rem">Scholarly ruling on video games and permissible entertainment</div>
-        </a>
-        <a href="https://www.islamweb.org/en/fatawa/222" target="_blank" rel="noopener" style="background:rgba(18,25,42,.7);border:1px solid var(--border);border-radius:12px;padding:1rem;text-decoration:none;transition:all .2s" onmouseover="this.style.borderColor='rgba(129,140,248,.3)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="color:var(--brand);font-weight:600;font-size:.9375rem;margin-bottom:4px">IslamWeb — Gambling Fatwas</div>
-          <div style="color:var(--muted);font-size:.8125rem">Rulings on gambling, betting, and games of chance</div>
-        </a>
-        <a href="https://halalguidelines.com/haram-games-in-islam/" target="_blank" rel="noopener" style="background:rgba(18,25,42,.7);border:1px solid var(--border);border-radius:12px;padding:1rem;text-decoration:none;transition:all .2s" onmouseover="this.style.borderColor='rgba(129,140,248,.3)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="color:var(--brand);font-weight:600;font-size:.9375rem;margin-bottom:4px">Halal Guidelines — Haram Games</div>
-          <div style="color:var(--muted);font-size:.8125rem">Detailed breakdown of why specific games are haram</div>
-        </a>
-      </div>
-    </section>
-
-    <footer style="text-align:center;padding:2rem 1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.8125rem;max-width:640px;margin:0 auto">
-      <p style="margin-bottom:.5rem">Community tool for informational purposes only. Not a religious ruling.</p>
-      <p style="color:var(--brand);font-weight:500">HalalGames Guide — Free & Open Source — MSC Arabia</p>
-    </footer>
-  </div>
-
-  <!-- Detail modal -->
-  <div class="modal-overlay" id="detail-modal" role="dialog" aria-labelledby="detail-title" aria-modal="true" aria-labelledby="detail-title">
-    <div class="modal-content" id="detail-content"></div>
-  </div>
-
-  <!-- Report modal -->
-  <div class="modal-overlay" id="report-modal">
-    <div class="modal-content" style="max-width:440px;padding:1.5rem">
-      <button class="modal-close" onclick="closeReportModal()" aria-label="Close">✕</button>
-      <h3 style="color:var(--heading);font-size:1.125rem;font-weight:700;margin-bottom:.75rem">Report Incorrect Verdict</h3>
-      <p style="color:var(--muted);font-size:.875rem;margin-bottom:1rem" id="report-game-name"></p>
-      <textarea id="report-reason" rows="4" placeholder="Why do you think this verdict is wrong? (e.g. game doesn't actually contain gambling, violence is cartoonish not realistic...)" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 14px;font-size:.875rem;outline:none;resize:vertical;font-family:inherit"></textarea>
-      <div style="display:flex;gap:8px;margin-top:1rem">
-        <button onclick="submitReport()" style="flex:1;padding:10px;border-radius:10px;background:var(--brand);color:#fff;border:none;font-weight:600;cursor:pointer;font-size:.875rem">Submit Report</button>
-        <button onclick="closeReportModal()" style="padding:10px 16px;border-radius:10px;background:var(--border);color:var(--muted);border:none;cursor:pointer;font-size:.875rem">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Admin panel -->
-  <div class="modal-overlay" id="admin-modal">
-    <div class="modal-content" style="max-width:700px;padding:1.5rem">
-      <button class="modal-close" onclick="closeAdmin()" aria-label="Close">✕</button>
-      <h3 style="color:var(--heading);font-size:1.125rem;font-weight:700;margin-bottom:1rem">Admin — Reports</h3>
-      <div id="admin-reports" style="max-height:60vh;overflow-y:auto"></div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast hide"></div>
-
-<script>
-/* ===== HELPERS ===== */
-function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hide');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hide'),3500)}
-
-/* ===== CONFIG ===== */
-const CONFIG={RAWG_API_KEY:'772db6db7cf24515af0abca4b3c2c403',API_BASE:'https://api.rawg.io/api'};
-
-/* ===== CURATED HALAL PICKS ===== */
-const HALAL_PICKS=[
-  {name:'Minecraft',slug:'minecraft',why:'Sandbox creativity, family-friendly'},
-  {name:'Stardew Valley',slug:'stardew-valley',why:'Peaceful farming sim'},
-  {name:'FIFA 25',slug:'ea-sports-fc-25',why:'Clean sports simulation'},
-  {name:'Mario Kart 8',slug:'mario-kart-8-deluxe',why:'Family racing fun'},
-  {name:'Animal Crossing',slug:'animal-crossing-new-horizons',why:'Wholesome life sim'},
-  {name:'Tetris Effect',slug:'tetris-effect',why:'Classic puzzle, zero concerns'},
-  {name:'Among Us',slug:'among-us',why:'Social deduction, cartoon style'},
-  {name:'Rocket League',slug:'rocket-league',why:'Soccer with cars, clean fun'},
-  {name:'Portal 2',slug:'portal-2',why:'Puzzle game, witty story'},
-  {name:'Celeste',slug:'celeste',why:'Platformer, beautiful & clean'},
-  {name:'Hollow Knight',slug:'hollow-knight',why:'Exploration, mild fantasy'},
-  {name:'Overcooked 2',slug:'overcooked-2',why:'Co-op cooking, family-friendly'},
-];
-
-/* ===== MOCK GAMES (with RAWG CDN images) ===== */
-const MOCK_GAMES=[
-  {id:1001,name:'Minecraft',slug:'minecraft',released:'2011-05-18',background_image:'https://media.rawg.io/media/crop/600/400/games/e6/e6e040e9acbce73f2b7c2a8e285c1792.jpg',genres:[{name:'Sandbox'},{name:'Survival'}],tags:[{name:'singleplayer'},{name:'crafting'},{name:'building'}],rating:4.5,description_raw:'A sandbox game where you build, explore, and survive in a blocky 3D world. Create structures, mine resources, and craft tools. Family-friendly with creative and survival modes.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:1002,name:'Stardew Valley',slug:'stardew-valley',released:'2016-02-26',background_image:'https://media.rawg.io/media/crop/600/400/games/4/5/45286ea4321d0eccad7887a0e587423e.jpg',genres:[{name:'Simulation'},{name:'RPG'}],tags:[{name:'farming'},{name:'relaxing'},{name:'singleplayer'}],rating:4.4,description_raw:'A peaceful farming simulation. Grow crops, raise animals, fish, and build relationships. Completely wholesome with no objectionable content.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}}]},
-  {id:1003,name:'EA Sports FC 25',slug:'ea-sports-fc-25',released:'2024-09-27',background_image:'https://media.rawg.io/media/crop/600/400/games/3ef/3efd7d4c3be7d0e8e1e20c40c05e6964.jpg',genres:[{name:'Sports'},{name:'Simulation'}],tags:[{name:'sports'},{name:'soccer'},{name:'multiplayer'}],rating:3.8,description_raw:'The latest installment in the EA Sports football franchise. Real teams, players, and stadiums. Clean sports simulation.',esrb_rating:{name:'Everyone'},stores:[{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:1004,name:'Mario Kart 8 Deluxe',slug:'mario-kart-8-deluxe',released:'2017-04-28',background_image:'https://media.rawg.io/media/crop/600/400/games/14/1498b37337ce0b1f5aa1bc20f5ea39dd.jpg',genres:[{name:'Racing'},{name:'Family'}],tags:[{name:'racing'},{name:'family'},{name:'multiplayer'}],rating:4.7,description_raw:'The definitive kart racing game. Race iconic tracks with Mario characters. Family-friendly, colorful, and fun for all ages.',esrb_rating:{name:'Everyone'},stores:[{store:{id:7,name:'Nintendo Store'}}]},
-  {id:1005,name:'Grand Theft Auto V',slug:'grand-theft-auto-v',released:'2013-09-17',background_image:'https://media.rawg.io/media/crop/600/400/games/20/20aa93526e80ac4676dcf029d7388b85.jpg',genres:[{name:'Action'},{name:'Adventure'}],tags:[{name:'open-world'},{name:'violence'},{name:'crime'},{name:'adult'}],rating:4.4,description_raw:'An open-world action game centered on crime, violence, and adult themes. Contains extreme violence, sexual content, drug use, gambling, and criminal activity.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}}]},
-  {id:1006,name:'Mortal Kombat 1',slug:'mortal-kombat-1',released:'2023-09-19',background_image:'https://media.rawg.io/media/crop/600/400/games/d3e/d3e60d35ecae1a2e8a0b15c9e0e7ef21.jpg',genres:[{name:'Fighting'}],tags:[{name:'fighting'},{name:'violence'},{name:'gore'}],rating:3.9,description_raw:'A fighting game known for extreme violence and gore. Features graphic fatalities, brutal combat, and mature themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}}]},
-  {id:1007,name:'Fortnite',slug:'fortnite',released:'2017-07-25',background_image:'',genres:[{name:'Action'}],tags:[{name:'multiplayer'},{name:'battle-royale'},{name:'free-to-play'}],rating:3.9,description_raw:'A colorful battle royale shooter. Cartoonish violence, building mechanics, and social features. Contains mild violence and in-game purchases.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Epic Games'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:1008,name:'The Witcher 3',slug:'the-witcher-3-wild-hunt',released:'2015-05-19',background_image:'https://media.rawg.io/media/crop/600/400/games/270/270d1a4c5c3e03ee389ad7e402a5d73e.jpg',genres:[{name:'RPG'},{name:'Action'}],tags:[{name:'open-world'},{name:'magic'},{name:'fantasy'}],rating:4.7,description_raw:'An epic fantasy RPG. Contains magic, sorcery, some sexual content, alcohol references, and fantasy violence.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}}]},
-  {id:1009,name:'God of War Ragnarok',slug:'god-of-war-ragnarok',released:'2022-11-09',background_image:'https://media.rawg.io/media/crop/600/400/games/2ea/2ea688e38a136f0a86c9a505b3de4a12.jpg',genres:[{name:'Action'},{name:'Adventure'}],tags:[{name:'story'},{name:'mythology'},{name:'violence'}],rating:4.7,description_raw:'A mythological action adventure based on Norse mythology. Features gods, magic, and intense combat. Contains violence and polytheistic themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:2,name:'PlayStation Store'}},{store:{id:1,name:'Steam'}}]},
-  {id:1010,name:'Cyberpunk 2077',slug:'cyberpunk-2077',released:'2020-12-10',background_image:'https://media.rawg.io/media/crop/600/400/games/26e/26e448338b809b1e3f1f23f38b7c6f1f.jpg',genres:[{name:'RPG'},{name:'Action'}],tags:[{name:'open-world'},{name:'violence'},{name:'adult'}],rating:4.1,description_raw:'An open-world RPG in a dystopian cyberpunk future. Contains strong sexual content, violence, drug use, and mature themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}}]},
-  {id:1011,name:'Dead or Alive 6',slug:'dead-or-alive-6',released:'2019-03-01',background_image:'https://media.rawg.io/media/crop/600/400/games/7a/7a47a73a3b1bc4e48e173c23b3f3b2a3.jpg',genres:[{name:'Fighting'}],tags:[{name:'fighting'},{name:'ecchi'}],rating:3.4,description_raw:'A fighting game featuring female characters in revealing outfits with exaggerated physics. Contains sexualized content.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:1012,name:'Animal Crossing: New Horizons',slug:'animal-crossing-new-horizons',released:'2020-03-20',background_image:'https://media.rawg.io/media/crop/600/400/games/1da/1dafab8e70f71b3a9ef3a3b2f5f5f0f0.jpg',genres:[{name:'Simulation'},{name:'Casual'}],tags:[{name:'relaxing'},{name:'family'},{name:'creative'}],rating:4.6,description_raw:'A life simulation on a deserted island. Build, decorate, fish, and befriend animal villagers. Completely wholesome.',esrb_rating:{name:'Everyone'},stores:[{store:{id:7,name:'Nintendo Store'}}]},
-  {id:1013,name:'Pokemon Scarlet',slug:'pokemon-scarlet',released:'2022-11-18',background_image:'https://media.rawg.io/media/crop/600/400/games/d86/d860afe265c6a1294c420a5e2d8a4e62.jpg',genres:[{name:'RPG'},{name:'Adventure'}],tags:[{name:'kids'},{name:'family'},{name:'creatures'}],rating:4.0,description_raw:'A family-friendly RPG. Catch and train Pokemon, explore an open world, and become champion.',esrb_rating:{name:'Everyone'},stores:[{store:{id:7,name:'Nintendo Store'}}]},
-  {id:1014,name:'Among Us',slug:'among-us',released:'2018-06-15',background_image:'https://media.rawg.io/media/crop/600/400/games/bd7/bd7cf9867497aabb4a7c48a1e63f27ee.jpg',genres:[{name:'Casual'},{name:'Strategy'}],tags:[{name:'multiplayer'},{name:'social'},{name:'party'}],rating:4.0,description_raw:'A social deduction game. Crewmates find impostors. Cartoon graphics, mild elimination animations, social interaction.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:1015,name:'Rocket League',slug:'rocket-league',released:'2015-07-07',background_image:'https://media.rawg.io/media/crop/600/400/games/191/1910847e3a8b48b897f6e8e4c5f5f5f0.jpg',genres:[{name:'Sports'},{name:'Racing'}],tags:[{name:'sports'},{name:'multiplayer'},{name:'cars'}],rating:4.2,description_raw:'Soccer with rocket-powered cars. Fast-paced competitive gameplay. No objectionable content.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Epic Games'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:1016,name:'League of Legends',slug:'league-of-legends',released:'2009-10-27',background_image:'',genres:[{name:'MOBA'}],tags:[{name:'multiplayer'},{name:'magic'},{name:'competitive'}],rating:3.8,description_raw:'A competitive MOBA. Champions use magic and abilities. Contains fantasy violence, dark themes, microtransactions.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Riot Games'}}]},
-  {id:1017,name:'Call of Duty: MW3',slug:'call-of-duty-modern-warfare-iii',released:'2023-11-10',background_image:'',genres:[{name:'Action'}],tags:[{name:'shooter'},{name:'violence'},{name:'war'}],rating:3.5,description_raw:'A realistic military shooter. Intense combat, strong violence, blood, and war themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}}]},
-  {id:1018,name:'Skyrim',slug:'the-elder-scrolls-v-skyrim',released:'2011-11-11',background_image:'',genres:[{name:'RPG'},{name:'Action'}],tags:[{name:'open-world'},{name:'magic'},{name:'fantasy'}],rating:4.5,description_raw:'An open-world fantasy RPG. Explore a vast world, fight dragons, use magic spells. Contains fantasy violence, sorcery, alcohol.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}}]},
-  {id:1019,name:'PUBG',slug:'pubg-battlegrounds',released:'2017-12-20',background_image:'',genres:[{name:'Action'}],tags:[{name:'multiplayer'},{name:'battle-royale'},{name:'violence'}],rating:3.7,description_raw:'A battle royale shooter. 100 players fight to be last standing. Contains realistic violence, loot boxes.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}}]},
-  {id:1020,name:'Diablo IV',slug:'diablo-iv',released:'2023-06-06',background_image:'',genres:[{name:'RPG'},{name:'Action'}],tags:[{name:'multiplayer'},{name:'looter'},{name:'demons'},{name:'dark-fantasy'}],rating:4.1,description_raw:'A dark action RPG. Gothic world overrun by demons. Demonic themes, dark magic, violence, loot-based gameplay.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Battle.net'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}}]},
-
-  {id:21,name:'Portal 2',slug:'portal-2',released:'2011-04-19',background_image:'',genres:[{name:'Puzzle'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.7,description_raw:'Puzzle game with witty story. Family-friendly, no objectionable content.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}}]},
-  {id:22,name:'Celeste',slug:'celeste',released:'2018-01-25',background_image:'',genres:[{name:'Platformer'},{name:'Indie'}],tags:[{name:'singleplayer'},{name:'pixel-art'}],rating:4.6,description_raw:'Platformer about mental health. Beautiful pixel art, no objectionable content.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}}]},
-  {id:23,name:'Hollow Knight',slug:'hollow-knight',released:'2017-02-24',background_image:'',genres:[{name:'Action'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'metroidvania'}],rating:4.5,description_raw:'Exploration Metroidvania. Mild fantasy violence, atmospheric world.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}}]},
-  {id:24,name:'Overcooked 2',slug:'overcooked-2',released:'2018-08-07',background_image:'',genres:[{name:'Casual'},{name:'Simulation'}],tags:[{name:'multiplayer'},{name:'co-op'}],rating:4.3,description_raw:'Co-op cooking chaos. Family-friendly, fun for all ages.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:25,name:'Tetris Effect',slug:'tetris-effect',released:'2018-11-20',background_image:'',genres:[{name:'Puzzle'},{name:'Casual'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.4,description_raw:'Classic tile-matching puzzle with stunning visuals. Completely family-friendly.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:26,name:'It Takes Two',slug:'it-takes-two',released:'2021-03-26',background_image:'',genres:[{name:'Adventure'},{name:'Action'}],tags:[{name:'multiplayer'},{name:'co-op'}],rating:4.5,description_raw:'Co-op adventure. Creative gameplay, heartfelt story. Family-friendly.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:27,name:'Hades',slug:'hades',released:'2020-09-17',background_image:'',genres:[{name:'Action'},{name:'RPG'}],tags:[{name:'singleplayer'},{name:'roguelike'}],rating:4.7,description_raw:'Roguelike action. Greek mythology themes, fantasy violence. No gambling.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:28,name:'Splatoon 3',slug:'splatoon-3',released:'2022-09-09',background_image:'',genres:[{name:'Shooter'},{name:'Action'}],tags:[{name:'multiplayer'},{name:'family'}],rating:4.3,description_raw:'Colorful team shooter. Cartoonish ink-based combat, no realistic violence.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:7,name:'Nintendo Store'}}]},
-  {id:29,name:'The Sims 4',slug:'the-sims-4',released:'2014-09-02',background_image:'',genres:[{name:'Simulation'},{name:'Strategy'}],tags:[{name:'singleplayer'},{name:'life-sim'}],rating:3.8,description_raw:'Life simulation. Build homes, manage families. Some suggestive content.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'EA App'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:30,name:'Slay the Spire',slug:'slay-the-spire',released:'2019-01-23',background_image:'',genres:[{name:'Strategy'},{name:'RPG'}],tags:[{name:'singleplayer'},{name:'roguelike'}],rating:4.6,description_raw:'Card-based roguelike strategy. No gambling, abstract combat only.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:31,name:'Unpacking',slug:'unpacking',released:'2021-11-02',background_image:'',genres:[{name:'Puzzle'},{name:'Indie'}],tags:[{name:'singleplayer'},{name:'relaxing'}],rating:4.3,description_raw:'Zen puzzle game. Unpack items into spaces. Completely wholesome.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:32,name:'A Short Hike',slug:'a-short-hike',released:'2019-04-05',background_image:'',genres:[{name:'Adventure'},{name:'Indie'}],tags:[{name:'singleplayer'},{name:'relaxing'}],rating:4.5,description_raw:'Explore a peaceful island park. Chill adventure, no objectionable content.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:33,name:'Dead Cells',slug:'dead-cells',released:'2018-08-07',background_image:'',genres:[{name:'Action'},{name:'Platformer'}],tags:[{name:'singleplayer'},{name:'roguelike'}],rating:4.3,description_raw:'Action roguelike platformer. Fantasy violence, no gore or sexual content.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:34,name:'Gris',slug:'gris',released:'2018-12-13',background_image:'',genres:[{name:'Platformer'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'art'}],rating:4.6,description_raw:'Artistic platformer about grief. Beautiful watercolor visuals, no violence.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:35,name:'Baba Is You',slug:'baba-is-you',released:'2019-03-13',background_image:'',genres:[{name:'Puzzle'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.6,description_raw:'Puzzle game where you push rules to change how the game works. Family-friendly.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:36,name:'Spiritfarer',slug:'spiritfarer',released:'2020-09-18',background_image:'',genres:[{name:'Adventure'},{name:'Simulation'}],tags:[{name:'singleplayer'},{name:'relaxing'}],rating:4.5,description_raw:'Cozy management game about caring for spirits. Wholesome, emotional.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:37,name:'Disco Elysium',slug:'disco-elysium',released:'2019-10-15',background_image:'',genres:[{name:'RPG'}],tags:[{name:'singleplayer'},{name:'story'}],rating:4.5,description_raw:'Detective RPG. Deep story, alcohol/drug references, some sexual themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:38,name:'Return of the Obra Dinn',slug:'return-of-the-obra-dinn',released:'2018-10-18',background_image:'',genres:[{name:'Adventure'},{name:'Puzzle'}],tags:[{name:'singleplayer'},{name:'mystery'}],rating:4.6,description_raw:'Mystery game on a ghost ship. Some violent death scenes, no gambling.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}}]},
-  {id:39,name:'What Remains of Edith Finch',slug:'what-remains-of-edith-finch',released:'2017-04-25',background_image:'',genres:[{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'story'}],rating:4.5,description_raw:'Walking simulator exploring family stories. Some mature themes, no violence.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:40,name:'Cuphead',slug:'cuphead',released:'2017-09-29',background_image:'',genres:[{name:'Action'},{name:'Platformer'}],tags:[{name:'singleplayer'},{name:'co-op'}],rating:4.4,description_raw:'Run-and-gun with 1930s cartoon style. Cartoon violence, no gore.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:41,name:'Outer Wilds',slug:'outer-wilds',released:'2019-05-29',background_image:'',genres:[{name:'Adventure'},{name:'Action'}],tags:[{name:'singleplayer'},{name:'exploration'}],rating:4.7,description_raw:'Space exploration mystery. No violence, no gambling, no sexual content.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:42,name:'Into the Breach',slug:'into-the-breach',released:'2018-02-27',background_image:'',genres:[{name:'Strategy'},{name:'Puzzle'}],tags:[{name:'singleplayer'},{name:'roguelike'}],rating:4.5,description_raw:'Tactical strategy. Combat is abstract robots vs aliens. No gore.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},
-  {id:43,name:'The Witness',slug:'the-witness',released:'2016-01-26',background_image:'',genres:[{name:'Puzzle'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.5,description_raw:'Puzzle game on a mysterious island. No violence, no gambling, pure puzzle-solving.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:44,name:'Limbo',slug:'limbo',released:'2010-07-21',background_image:'',genres:[{name:'Platformer'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.3,description_raw:'Dark puzzle platformer. Some disturbing imagery, no gambling or sexual content.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:45,name:'Inside',slug:'inside',released:'2016-06-29',background_image:'',genres:[{name:'Platformer'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.5,description_raw:'Dark puzzle platformer. Some disturbing themes, no gambling or sexual content.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:46,name:'Ori and the Blind Forest',slug:'ori-and-the-blind-forest',released:'2015-03-11',background_image:'',genres:[{name:'Platformer'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'metroidvania'}],rating:4.6,description_raw:'Beautiful platformer. Emotional story, mild fantasy violence.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:3,name:'Xbox Store'}}]},
-  {id:47,name:'Journey',slug:'journey',released:'2012-03-13',background_image:'',genres:[{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'multiplayer'}],rating:4.7,description_raw:'Artistic adventure. No violence, no gambling, no sexual content. Pure beauty.',esrb_rating:{name:'Everyone'},stores:[{store:{id:2,name:'PlayStation Store'}}]},
-  {id:48,name:'Abzu',slug:'abzu',released:'2016-08-02',background_image:'',genres:[{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'exploration'}],rating:4.3,description_raw:'Underwater exploration. No violence, no gambling, peaceful and beautiful.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:49,name:'Firewatch',slug:'firewatch',released:'2016-02-09',background_image:'',genres:[{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'story'}],rating:4.3,description_raw:'Narrative adventure in Wyoming wilderness. Some mature themes, no violence.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},
-  {id:50,name:'Katana ZERO',slug:'katana-zero',released:'2019-04-18',background_image:'',genres:[{name:'Action'},{name:'Platformer'}],tags:[{name:'singleplayer'},{name:'action'}],rating:4.5,description_raw:'Stylized action platformer. Violence, drug references, mature themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},
-];
-
-/* ===== GENRES ===== */
-const ALL_GENRES=['Action','Adventure','RPG','Strategy','Sports','Racing','Puzzle','Simulation','Casual','Fighting','Shooter','Platformer'];
-
-/* ===== STORE LINKS ===== */
-function getStoreLinks(game){
-  const name=encodeURIComponent(game.name);
-  const links=[];const stores=game.stores||[];
-  for(const s of stores){
-    const id=s.store?.id||s.id;
-    const sn=(s.store?.name||s.name||'').toLowerCase();
-    if(id===1||sn.includes('steam')||sn.includes('epic')||sn.includes('riot')||sn.includes('battle.net'))links.push({label:'Steam / PC',url:'https://store.steampowered.com/search/?term='+name,cls:'steam'});
-    if(id===2||sn.includes('playstation'))links.push({label:'PlayStation',url:'https://store.playstation.com/search/'+name,cls:'playstation'});
-    if(id===3||sn.includes('xbox'))links.push({label:'Xbox',url:'https://www.xbox.com/en-us/search?q='+name,cls:'xbox'});
-    if(id===7||sn.includes('nintendo'))links.push({label:'Nintendo',url:'https://www.nintendo.com/us/search/?q='+name,cls:'nintendo'});
-  }
-  links.push({label:'Amazon',url:'https://www.amazon.com/s?k='+name+'+game',cls:'amazon'});
-  return links;
-}
-
-/* ===== HALAL SCREENER ===== */
+  <script>
+function esc(s){return s==null?'':String(s).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('"').join('&quot;').split("'").join('&#39;')}
+function placeholderImage(name,w,h){const i=String(name).trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();return'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'"><rect width="100%" height="100%" fill="#12192a"/><text x="50%" y="50%" font-family="sans-serif" font-size="'+Math.round(h*.28)+'" fill="#818cf8" text-anchor="middle" dominant-baseline="central">'+esc(i)+'</text></svg>')}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.remove('hide');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hide'),3500)}
+const CONFIG={API_BASE:'/api/games'};
+const MOCK_GAMES=[{id:1,name:'Minecraft',slug:'minecraft',released:'2011-05-18',background_image:'',genres:[{name:'Sandbox'},{name:'Survival'}],tags:[{name:'singleplayer'},{name:'crafting'},{name:'building'}],rating:4.5,description_raw:'A sandbox game where you build, explore, and survive. Family-friendly with creative and survival modes.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}},{store:{id:7,name:'Nintendo Store'}}]},{id:2,name:'Stardew Valley',slug:'stardew-valley',released:'2016-02-26',background_image:'',genres:[{name:'Simulation'},{name:'RPG'}],tags:[{name:'farming'},{name:'relaxing'}],rating:4.4,description_raw:'Peaceful farming simulation. Grow crops, raise animals, fish. Completely wholesome.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}}]},{id:3,name:'EA Sports FC 25',slug:'ea-sports-fc-25',released:'2024-09-27',background_image:'',genres:[{name:'Sports'},{name:'Simulation'}],tags:[{name:'sports'},{name:'soccer'}],rating:3.8,description_raw:'EA Sports football franchise. Real teams, players, stadiums. Clean sports simulation.',esrb_rating:{name:'Everyone'},stores:[{store:{id:2,name:'PlayStation Store'}},{store:{id:3,name:'Xbox Store'}}]},{id:4,name:'Mario Kart 8 Deluxe',slug:'mario-kart-8-deluxe',released:'2017-04-28',background_image:'',genres:[{name:'Racing'},{name:'Family'}],tags:[{name:'racing'},{name:'family'}],rating:4.7,description_raw:'Definitive kart racing. Family-friendly, colorful, fun for all ages.',esrb_rating:{name:'Everyone'},stores:[{store:{id:7,name:'Nintendo Store'}}]},{id:5,name:'Grand Theft Auto V',slug:'grand-theft-auto-v',released:'2013-09-17',background_image:'',genres:[{name:'Action'},{name:'Adventure'}],tags:[{name:'open-world'},{name:'violence'},{name:'crime'}],rating:4.4,description_raw:'Open-world crime game. Extreme violence, sexual content, drug use, gambling.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:6,name:'Mortal Kombat 1',slug:'mortal-kombat-1',released:'2023-09-19',background_image:'',genres:[{name:'Fighting'}],tags:[{name:'fighting'},{name:'gore'}],rating:3.9,description_raw:'Fighting game with extreme violence, gore, graphic fatalities.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:7,name:'Fortnite',slug:'fortnite',released:'2017-07-25',background_image:'',genres:[{name:'Shooter'},{name:'Action'}],tags:[{name:'multiplayer'},{name:'battle-royale'}],rating:3.9,description_raw:'Colorful battle royale. Cartoonish violence, building mechanics, in-game purchases.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Epic Games'}},{store:{id:2,name:'PlayStation Store'}}]},{id:8,name:'The Witcher 3',slug:'the-witcher-3-wild-hunt',released:'2015-05-19',background_image:'',genres:[{name:'RPG'},{name:'Action'}],tags:[{name:'open-world'},{name:'magic'},{name:'fantasy'}],rating:4.7,description_raw:'Epic fantasy RPG. Magic, sorcery, sexual content, alcohol, fantasy violence.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}}]},{id:9,name:'God of War Ragnarok',slug:'god-of-war-ragnarok',released:'2022-11-09',background_image:'',genres:[{name:'Action'},{name:'Adventure'}],tags:[{name:'mythology'},{name:'violence'}],rating:4.7,description_raw:'Norse mythology action. Gods, magic, intense combat, polytheistic themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:2,name:'PlayStation Store'}}]},{id:10,name:'Cyberpunk 2077',slug:'cyberpunk-2077',released:'2020-12-10',background_image:'',genres:[{name:'RPG'},{name:'Action'}],tags:[{name:'open-world'},{name:'violence'},{name:'adult'}],rating:4.1,description_raw:'Dystopian cyberpunk RPG. Strong sexual content, violence, drug use.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}}]},{id:11,name:'Dead or Alive 6',slug:'dead-or-alive-6',released:'2019-03-01',background_image:'',genres:[{name:'Fighting'}],tags:[{name:'fighting'},{name:'ecchi'}],rating:3.4,description_raw:'Fighting game with revealing outfits, exaggerated physics, sexualized content.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}}]},{id:12,name:'Animal Crossing: New Horizons',slug:'animal-crossing-new-horizons',released:'2020-03-20',background_image:'',genres:[{name:'Simulation'},{name:'Casual'}],tags:[{name:'relaxing'},{name:'family'}],rating:4.6,description_raw:'Life simulation on deserted island. Build, decorate, befriend villagers. Wholesome.',esrb_rating:{name:'Everyone'},stores:[{store:{id:7,name:'Nintendo Store'}}]},{id:13,name:'Pokemon Scarlet',slug:'pokemon-scarlet',released:'2022-11-18',background_image:'',genres:[{name:'RPG'},{name:'Adventure'}],tags:[{name:'kids'},{name:'family'}],rating:4.0,description_raw:'Family-friendly RPG. Catch Pokemon, explore open world, become champion.',esrb_rating:{name:'Everyone'},stores:[{store:{id:7,name:'Nintendo Store'}}]},{id:14,name:'Among Us',slug:'among-us',released:'2018-06-15',background_image:'',genres:[{name:'Casual'},{name:'Strategy'}],tags:[{name:'multiplayer'},{name:'social'}],rating:4.0,description_raw:'Social deduction. Crewmates find impostors. Cartoon graphics.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:15,name:'Rocket League',slug:'rocket-league',released:'2015-07-07',background_image:'',genres:[{name:'Sports'},{name:'Racing'}],tags:[{name:'sports'},{name:'multiplayer'}],rating:4.2,description_raw:'Soccer with rocket-powered cars. Fast-paced, no objectionable content.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Epic Games'}},{store:{id:2,name:'PlayStation Store'}}]},{id:16,name:'League of Legends',slug:'league-of-legends',released:'2009-10-27',background_image:'',genres:[{name:'Strategy'},{name:'MOBA'}],tags:[{name:'multiplayer'},{name:'magic'}],rating:3.8,description_raw:'Competitive MOBA. Champions use magic. Fantasy violence, dark themes, microtransactions.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Riot Games'}}]},{id:17,name:'Call of Duty: MW3',slug:'call-of-duty-modern-warfare-iii',released:'2023-11-10',background_image:'',genres:[{name:'Shooter'},{name:'Action'}],tags:[{name:'shooter'},{name:'violence'}],rating:3.5,description_raw:'Realistic military shooter. Intense combat, strong violence, blood, war themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}}]},{id:18,name:'Skyrim',slug:'the-elder-scrolls-v-skyrim',released:'2011-11-11',background_image:'',genres:[{name:'RPG'},{name:'Action'}],tags:[{name:'open-world'},{name:'magic'}],rating:4.5,description_raw:'Open-world fantasy RPG. Fight dragons, use magic. Violence, sorcery, alcohol.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}}]},{id:19,name:'PUBG',slug:'pubg-battlegrounds',released:'2017-12-20',background_image:'',genres:[{name:'Shooter'},{name:'Action'}],tags:[{name:'multiplayer'},{name:'battle-royale'}],rating:3.7,description_raw:'Battle royale. 100 players, realistic violence, loot boxes.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}}]},{id:20,name:'Diablo IV',slug:'diablo-iv',released:'2023-06-06',background_image:'',genres:[{name:'RPG'},{name:'Action'}],tags:[{name:'multiplayer'},{name:'demons'}],rating:4.1,description_raw:'Dark action RPG. Gothic world, demonic themes, dark magic, violence.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Battle.net'}}]},{id:21,name:'Portal 2',slug:'portal-2',released:'2011-04-19',background_image:'',genres:[{name:'Puzzle'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.7,description_raw:'Puzzle game with witty story. Family-friendly, no objectionable content.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}}]},{id:22,name:'Celeste',slug:'celeste',released:'2018-01-25',background_image:'',genres:[{name:'Platformer'},{name:'Indie'}],tags:[{name:'singleplayer'},{name:'pixel-art'}],rating:4.6,description_raw:'Platformer about mental health. Beautiful pixel art, no objectionable content.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}}]},{id:23,name:'Hollow Knight',slug:'hollow-knight',released:'2017-02-24',background_image:'',genres:[{name:'Action'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'metroidvania'}],rating:4.5,description_raw:'Exploration Metroidvania. Mild fantasy violence, atmospheric world.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}}]},{id:24,name:'Overcooked 2',slug:'overcooked-2',released:'2018-08-07',background_image:'',genres:[{name:'Casual'},{name:'Simulation'}],tags:[{name:'multiplayer'},{name:'co-op'}],rating:4.3,description_raw:'Co-op cooking chaos. Family-friendly, fun for all ages.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},{id:25,name:'Tetris Effect',slug:'tetris-effect',released:'2018-11-20',background_image:'',genres:[{name:'Puzzle'},{name:'Casual'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.4,description_raw:'Classic tile-matching puzzle with stunning visuals. Completely family-friendly.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:26,name:'It Takes Two',slug:'it-takes-two',released:'2021-03-26',background_image:'',genres:[{name:'Adventure'},{name:'Action'}],tags:[{name:'multiplayer'},{name:'co-op'}],rating:4.5,description_raw:'Co-op adventure. Creative gameplay, heartfelt story. Family-friendly.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:27,name:'Hades',slug:'hades',released:'2020-09-17',background_image:'',genres:[{name:'Action'},{name:'RPG'}],tags:[{name:'singleplayer'},{name:'roguelike'}],rating:4.7,description_raw:'Roguelike action. Greek mythology themes, fantasy violence. No gambling.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:28,name:'Splatoon 3',slug:'splatoon-3',released:'2022-09-09',background_image:'',genres:[{name:'Shooter'},{name:'Action'}],tags:[{name:'multiplayer'},{name:'family'}],rating:4.3,description_raw:'Colorful team shooter. Cartoonish ink-based combat, no realistic violence.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:7,name:'Nintendo Store'}}]},{id:29,name:'The Sims 4',slug:'the-sims-4',released:'2014-09-02',background_image:'',genres:[{name:'Simulation'},{name:'Strategy'}],tags:[{name:'singleplayer'},{name:'life-sim'}],rating:3.8,description_raw:'Life simulation. Build homes, manage families. Some suggestive content.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'EA App'}},{store:{id:2,name:'PlayStation Store'}}]},{id:30,name:'Slay the Spire',slug:'slay-the-spire',released:'2019-01-23',background_image:'',genres:[{name:'Strategy'},{name:'RPG'}],tags:[{name:'singleplayer'},{name:'roguelike'}],rating:4.6,description_raw:'Card-based roguelike strategy. No gambling, abstract combat only.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},{id:31,name:'Unpacking',slug:'unpacking',released:'2021-11-02',background_image:'',genres:[{name:'Puzzle'},{name:'Indie'}],tags:[{name:'singleplayer'},{name:'relaxing'}],rating:4.3,description_raw:'Zen puzzle game. Unpack items into spaces. Completely wholesome.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},{id:32,name:'A Short Hike',slug:'a-short-hike',released:'2019-04-05',background_image:'',genres:[{name:'Adventure'},{name:'Indie'}],tags:[{name:'singleplayer'},{name:'relaxing'}],rating:4.5,description_raw:'Explore a peaceful island park. Chill adventure, no objectionable content.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},{id:33,name:'Dead Cells',slug:'dead-cells',released:'2018-08-07',background_image:'',genres:[{name:'Action'},{name:'Platformer'}],tags:[{name:'singleplayer'},{name:'roguelike'}],rating:4.3,description_raw:'Action roguelike platformer. Fantasy violence, no gore or sexual content.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},{id:34,name:'Gris',slug:'gris',released:'2018-12-13',background_image:'',genres:[{name:'Platformer'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'art'}],rating:4.6,description_raw:'Artistic platformer about grief. Beautiful watercolor visuals, no violence.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:35,name:'Baba Is You',slug:'baba-is-you',released:'2019-03-13',background_image:'',genres:[{name:'Puzzle'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.6,description_raw:'Puzzle game where you push rules to change how the game works. Family-friendly.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},{id:36,name:'Spiritfarer',slug:'spiritfarer',released:'2020-09-18',background_image:'',genres:[{name:'Adventure'},{name:'Simulation'}],tags:[{name:'singleplayer'},{name:'relaxing'}],rating:4.5,description_raw:'Cozy management game about caring for spirits. Wholesome, emotional.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:37,name:'Disco Elysium',slug:'disco-elysium',released:'2019-10-15',background_image:'',genres:[{name:'RPG'}],tags:[{name:'singleplayer'},{name:'story'}],rating:4.5,description_raw:'Detective RPG. Deep story, alcohol/drug references, some sexual themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:38,name:'Return of the Obra Dinn',slug:'return-of-the-obra-dinn',released:'2018-10-18',background_image:'',genres:[{name:'Adventure'},{name:'Puzzle'}],tags:[{name:'singleplayer'},{name:'mystery'}],rating:4.6,description_raw:'Mystery game on a ghost ship. Some violent death scenes, no gambling.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}}]},{id:39,name:'What Remains of Edith Finch',slug:'what-remains-of-edith-finch',released:'2017-04-25',background_image:'',genres:[{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'story'}],rating:4.5,description_raw:'Walking simulator exploring family stories. Some mature themes, no violence.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:40,name:'Cuphead',slug:'cuphead',released:'2017-09-29',background_image:'',genres:[{name:'Action'},{name:'Platformer'}],tags:[{name:'singleplayer'},{name:'co-op'}],rating:4.4,description_raw:'Run-and-gun with 1930s cartoon style. Cartoon violence, no gore.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},{id:41,name:'Outer Wilds',slug:'outer-wilds',released:'2019-05-29',background_image:'',genres:[{name:'Adventure'},{name:'Action'}],tags:[{name:'singleplayer'},{name:'exploration'}],rating:4.7,description_raw:'Space exploration mystery. No violence, no gambling, no sexual content.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:42,name:'Into the Breach',slug:'into-the-breach',released:'2018-02-27',background_image:'',genres:[{name:'Strategy'},{name:'Puzzle'}],tags:[{name:'singleplayer'},{name:'roguelike'}],rating:4.5,description_raw:'Tactical strategy. Combat is abstract robots vs aliens. No gore.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]},{id:43,name:'The Witness',slug:'the-witness',released:'2016-01-26',background_image:'',genres:[{name:'Puzzle'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.5,description_raw:'Puzzle game on a mysterious island. No violence, no gambling, pure puzzle-solving.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:44,name:'Limbo',slug:'limbo',released:'2010-07-21',background_image:'',genres:[{name:'Platformer'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.3,description_raw:'Dark puzzle platformer. Some disturbing imagery, no gambling or sexual content.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:45,name:'Inside',slug:'inside',released:'2016-06-29',background_image:'',genres:[{name:'Platformer'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'puzzle'}],rating:4.5,description_raw:'Dark puzzle platformer. Some disturbing themes, no gambling or sexual content.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:46,name:'Ori and the Blind Forest',slug:'ori-and-the-blind-forest',released:'2015-03-11',background_image:'',genres:[{name:'Platformer'},{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'metroidvania'}],rating:4.6,description_raw:'Beautiful platformer. Emotional story, mild fantasy violence.',esrb_rating:{name:'Everyone 10+'},stores:[{store:{id:1,name:'Steam'}},{store:{id:3,name:'Xbox Store'}}]},{id:47,name:'Journey',slug:'journey',released:'2012-03-13',background_image:'',genres:[{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'multiplayer'}],rating:4.7,description_raw:'Artistic adventure. No violence, no gambling, no sexual content. Pure beauty.',esrb_rating:{name:'Everyone'},stores:[{store:{id:2,name:'PlayStation Store'}}]},{id:48,name:'Abzu',slug:'abzu',released:'2016-08-02',background_image:'',genres:[{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'exploration'}],rating:4.3,description_raw:'Underwater exploration. No violence, no gambling, peaceful and beautiful.',esrb_rating:{name:'Everyone'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:49,name:'Firewatch',slug:'firewatch',released:'2016-02-09',background_image:'',genres:[{name:'Adventure'}],tags:[{name:'singleplayer'},{name:'story'}],rating:4.3,description_raw:'Narrative adventure in Wyoming wilderness. Some mature themes, no violence.',esrb_rating:{name:'Teen'},stores:[{store:{id:1,name:'Steam'}},{store:{id:2,name:'PlayStation Store'}}]},{id:50,name:'Katana ZERO',slug:'katana-zero',released:'2019-04-18',background_image:'',genres:[{name:'Action'},{name:'Platformer'}],tags:[{name:'singleplayer'},{name:'action'}],rating:4.5,description_raw:'Stylized action platformer. Violence, drug references, mature themes.',esrb_rating:{name:'Mature'},stores:[{store:{id:1,name:'Steam'}},{store:{id:7,name:'Nintendo Store'}}]}];
+const ALL_GENRES=['Action','Adventure','RPG','Strategy','Sports','Racing','Puzzle','Simulation','Casual','Fighting','Shooter','Platformer','Indie'];
+function getStoreLinks(g){const n=encodeURIComponent(g.name),l=[],s=g.stores||[];for(const x of s){const id=x.store?.id||0,sn=(x.store?.name||'').toLowerCase();if(id===1||sn.includes('steam')||sn.includes('epic'))l.push({label:'Steam',url:'https://store.steampowered.com/search/?term='+n,cls:'steam'});if(id===2||sn.includes('playstation'))l.push({label:'PlayStation',url:'https://store.playstation.com/search/'+n,cls:'ps'});if(id===3||sn.includes('xbox'))l.push({label:'Xbox',url:'https://www.xbox.com/en-us/search?q='+n,cls:'xbox'});if(id===7||sn.includes('nintendo'))l.push({label:'Nintendo',url:'https://www.nintendo.com/us/search/?q='+n,cls:'nintendo'})}l.push({label:'Amazon',url:'https://www.amazon.com/s?k='+n+'+game',cls:'amazon'});return l}
 const HARAM_KW=['casino','gambling','betting','poker','slots','guts','gore','nudity','nude','sexual','erotic','nsfw','idol worship','occult ritual'];
 const CAUTION_KW=['magic','sorcery','spells','demons','demon','mythology','gory','blood','alcohol','drugs','witchcraft','necromancy','polytheism','idol worship','lootbox','gacha','microtransaction','dark-fantasy','violence'];
 const HALAL_KW=['puzzle','racing','sports','simulator','educational','clean','family','kids','platformer','strategy','building','crafting','farm','cooking','relaxing','creative','soccer','tennis','golf','casual','party','deduction','co-op','sandbox'];
-
-function screenGame(game){
-  const text=[game.name,game.description_raw||'',...(game.genres||[]).map(g=>g.name),...(game.tags||[]).map(t=>t.name)].join(' ').toLowerCase();
-  const esrb=(game.esrb_rating?.name||'').toLowerCase();
-  let score=70;
-  const flags={faithImpact:{status:'safe',detail:'No detected faith-related concerns'},financialEthics:{status:'safe',detail:'No detected gambling or financial concerns'},modesty:{status:'safe',detail:'No detected modesty concerns'},violenceLevel:{status:'safe',detail:'No detected violence concerns'}};
-  const tags=[];
-  for(const kw of HARAM_KW){if(text.includes(kw)){tags.push('haram:'+kw);score-=20}}
-  for(const kw of CAUTION_KW){if(text.includes(kw)){tags.push('caution:'+kw);score-=8}}
-  for(const kw of HALAL_KW){if(text.includes(kw)){tags.push('halal:'+kw);score+=4}}
-  if(esrb.includes('mature')){score-=25;tags.push('esrb:mature')}
-  else if(esrb.includes('teen')){score-=8;tags.push('esrb:teen')}
-  else if(esrb.includes('everyone')){score+=5;tags.push('esrb:everyone')}
-  const faithBad=['magic','sorcery','spells','mythology','demons','demon','witchcraft','necromancy','polytheism','idol worship','shirk'];
-  if(faithBad.some(k=>text.includes(k))){flags.faithImpact.status=tags.some(t=>t.includes('haram'))?'haram':'caution';flags.faithImpact.detail='Contains: '+faithBad.filter(k=>text.includes(k)).slice(0,3).join(', ')}
-  const finBad=['casino','gambling','betting','poker','slots','lootbox','gacha','microtransaction'];
-  if(finBad.some(k=>text.includes(k))){flags.financialEthics.status=['casino','gambling','betting','poker','slots'].some(k=>text.includes(k))?'haram':'caution';flags.financialEthics.detail='Contains: '+finBad.filter(k=>text.includes(k)).slice(0,3).join(', ')}
-  const modestyBad=['nudity','nude','sexual','erotic','nsfw','ecchi','suggestive'];
-  if(modestyBad.some(k=>text.includes(k))){flags.modesty.status='haram';flags.modesty.detail='Contains: '+modestyBad.filter(k=>text.includes(k)).slice(0,3).join(', ')}
-  const violBad=['gore','guts','blood','violence','gory','fatality'];
-  if(violBad.some(k=>text.includes(k))){flags.violenceLevel.status=['gore','guts','gory','fatality'].some(k=>text.includes(k))?'haram':'caution';flags.violenceLevel.detail='Contains: '+violBad.filter(k=>text.includes(k)).slice(0,3).join(', ')}
-  else if(['cartoon','colorful','family','kids'].some(k=>text.includes(k))){flags.violenceLevel.detail='Mild/cartoonish violence only'}
-  score=Math.max(0,Math.min(100,score));
-  let verdict='halal';if(score<35)verdict='haram';else if(score<65)verdict='caution';
-  if(tags.some(t=>t.startsWith('haram:'))){if(verdict!=='haram'){verdict='caution';score=Math.min(score,40)}}
-  return{verdict,score,flags,tags};
-}
-
-function generateTips(sr,game){
-  const tips=[];
-  if(sr.flags.faithImpact.status!=='safe')tips.push('Contains fantasy/dark magic elements. Remember this is fictional and does not reflect Islamic beliefs.');
-  if(sr.flags.financialEthics.status!=='safe')tips.push('Contains lootbox/gacha/microtransaction mechanics. Be cautious of gambling-like systems.');
-  if(sr.flags.modesty.status!=='safe')tips.push('Features sexualized or suggestive content. Consider whether this aligns with your standards.');
-  if(sr.flags.violenceLevel.status==='haram')tips.push('Contains extreme/graphic violence. Consider whether this aligns with your standards.');
-  else if(sr.flags.violenceLevel.status==='caution')tips.push('Contains moderate violence. Most gameplay focuses on other elements.');
-  if(tips.length===0)tips.push('This game appears free of major content concerns. Enjoy responsibly!');
-  const genres=(game.genres||[]).map(g=>g.name.toLowerCase()).join(' ');
-  if(genres.includes('rpg')||genres.includes('action')||genres.includes('adventure'))tips.push('If in-game music is a concern, most games allow you to mute it in audio settings.');
-  return tips;
-}
-
-/* ===== COMMUNITY (localStorage) ===== */
+function screenGame(g){const t=[g.name,g.description_raw||'',...(g.genres||[]).map(x=>x.name),...(g.tags||[]).map(x=>x.name)].join(' ').toLowerCase(),esrb=(g.esrb_rating?.name||'').toLowerCase();let sc=70;const tags=[],fl={faithImpact:{status:'safe',detail:'No detected faith-related concerns'},financialEthics:{status:'safe',detail:'No detected gambling or financial concerns'},modesty:{status:'safe',detail:'No detected modesty concerns'},violenceLevel:{status:'safe',detail:'No detected violence concerns'}};for(const kw of HARAM_KW){if(t.includes(kw)){tags.push('haram:'+kw);sc-=20}}for(const kw of CAUTION_KW){if(t.includes(kw)){tags.push('caution:'+kw);sc-=8}}for(const kw of HALAL_KW){if(t.includes(kw)){tags.push('halal:'+kw);sc+=4}}if(esrb.includes('mature')){sc-=25;tags.push('esrb:mature')}else if(esrb.includes('teen')){sc-=8;tags.push('esrb:teen')}else if(esrb.includes('everyone')){sc+=5;tags.push('esrb:everyone')}const fb=['magic','sorcery','spells','mythology','demons','demon','witchcraft','necromancy','polytheism','idol worship','shirk'];if(fb.some(k=>t.includes(k))){fl.faithImpact.status=tags.some(x=>x.startsWith('haram:'))?'haram':'caution';fl.faithImpact.detail='Contains: '+fb.filter(k=>t.includes(k)).slice(0,3).join(', ')}const fin=['casino','gambling','betting','poker','slots','lootbox','gacha','microtransaction'];if(fin.some(k=>t.includes(k))){fl.financialEthics.status=['casino','gambling','betting','poker','slots'].some(k=>t.includes(k))?'haram':'caution';fl.financialEthics.detail='Contains: '+fin.filter(k=>t.includes(k)).slice(0,3).join(', ')}const mod=['nudity','nude','sexual','erotic','nsfw','ecchi','suggestive'];if(mod.some(k=>t.includes(k))){fl.modesty.status='haram';fl.modesty.detail='Contains: '+mod.filter(k=>t.includes(k)).slice(0,3).join(', ')}const viol=['gore','guts','blood','violence','gory','fatality'];if(viol.some(k=>t.includes(k))){fl.violenceLevel.status=['gore','guts','gory','fatality'].some(k=>t.includes(k))?'haram':'caution';fl.violenceLevel.detail='Contains: '+viol.filter(k=>t.includes(k)).slice(0,3).join(', ')}else if(['cartoon','colorful','family','kids'].some(k=>t.includes(k))){fl.violenceLevel.detail='Mild/cartoonish violence only'}fl.audioContent={status:'info',detail:'Most games include music — mute in settings if needed.'};sc=Math.max(0,Math.min(100,sc));let v='halal';if(sc<35)v='haram';else if(sc<65)v='caution';if(tags.some(x=>x.startsWith('haram:'))&&v!=='haram'){v='caution';sc=Math.min(sc,40)}return{verdict:v,score:sc,flags:fl,tags}}
+function genTips(sr){const t=[];if(sr.flags.faithImpact.status!=='safe')t.push('Contains fantasy/dark magic. Remember this is fictional.');if(sr.flags.financialEthics.status!=='safe')t.push('Contains lootbox/gacha mechanics. Be cautious.');if(sr.flags.modesty.status!=='safe')t.push('Features sexualized content.');if(sr.flags.violenceLevel.status==='haram')t.push('Contains extreme violence.');else if(sr.flags.violenceLevel.status==='caution')t.push('Contains moderate violence.');if(!t.length)t.push('This game appears free of major concerns. Enjoy!');return t}
 function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
 function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
 function getReports(){try{return JSON.parse(localStorage.getItem('hg_reports')||'[]')}catch{return[]}}
 function setReports(r){try{localStorage.setItem('hg_reports',JSON.stringify(r))}catch{}}
+let _rgid=null;function openReport(gid,gn){_rgid=gid;document.getElementById('report-game-name').textContent='Reporting: '+gn;document.getElementById('report-reason').value='';document.getElementById('report-modal').classList.add('open')}function closeReportModal(){document.getElementById('report-modal').classList.remove('open')}function submitReport(){const r=document.getElementById('report-reason').value.trim();if(!r){showToast('Enter a reason');return}const rp=getReports();rp.push({gameId:_rgid,reason:r,ts:Date.now()});setReports(rp);closeReportModal();showToast('Report submitted!')}
+let CG=[],CF='all',CS='relevance',CGn='',DT=null,AC=null,UF=false;
+const SC=new Map(),CM=50;function cG(k){if(!SC.has(k))return;const v=SC.get(k);SC.delete(k);SC.set(k,v);return v}function cS(k,v){SC.delete(k);SC.set(k,v);if(SC.size>CM)SC.delete(SC.keys().next().value)}
+const $si=document.getElementById('search-input'),$res=document.getElementById('results'),$es=document.getElementById('empty-state'),$sk=document.getElementById('skeletons'),$rc=document.getElementById('result-count'),$ss=document.getElementById('sort-select'),$gm=document.getElementById('detail-modal'),$gmc=document.getElementById('detail-content'),$ld=document.getElementById('loader');
+function renderFilters(){const e=document.getElementById('filters');e.innerHTML=[{l:'All',f:'all'},{l:'Halal',f:'halal'},{l:'Caution',f:'caution'},{l:'Avoid',f:'haram'}].map(x=>'<button class="chip'+(x.f===CF?' active':'')+'" data-filter="'+x.f+'" aria-pressed="'+(x.f===CF)+'">'+x.l+'</button>').join('');e.querySelectorAll('.chip[data-filter]').forEach(c=>{c.addEventListener('click',()=>{e.querySelectorAll('.chip[data-filter]').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false')});c.classList.add('active');c.setAttribute('aria-pressed','true');CF=c.dataset.filter;applyFilters()})})}renderFilters();
+function renderGenreChips(){const e=document.getElementById('genre-chips');e.innerHTML='<button class="chip'+(CGn===''?' active':'')+'" data-genre="" aria-pressed="'+(CGn==='')+'">All Genres</button>'+ALL_GENRES.map(g=>'<button class="chip'+(CGn===g?' active':'')+'" data-genre="'+g+'" aria-pressed="'+(CGn===g)+'">'+g+'</button>').join('');e.querySelectorAll('.chip[data-genre]').forEach(c=>{c.addEventListener('click',()=>{e.querySelectorAll('.chip[data-genre]').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false')});c.classList.add('active');c.setAttribute('aria-pressed','true');CGn=c.dataset.genre;applyFilters()})})}renderGenreChips();
+async function fetchGames(q){const ck=q.trim().toLowerCase(),cached=cG(ck);if(cached){UF=false;return cached}AC?.abort();AC=new AbortController();const{signal}=AC;try{const res=await fetch(CONFIG.API_BASE+'?search='+encodeURIComponent(q)+'&page_size=20',{signal});if(!res.ok)throw new Error('proxy '+res.status);const data=await res.json();const games=(data.results||[]).map(g=>({...g,description_raw:g.description_raw||g.description||'',esrb_rating:g.esrb_rating||{name:g.rating_top<=2?'Everyone':'Teen'},stores:g.stores||[]}));cS(ck,games);UF=false;return games}catch(err){if(err.name==='AbortError')return null;UF=true;return MOCK_GAMES.filter(g=>g.name.toLowerCase().includes(ck)||(g.description_raw||'').toLowerCase().includes(ck)||(g.genres||[]).some(x=>x.name.toLowerCase().includes(ck))||(g.tags||[]).some(x=>x.name.toLowerCase().includes(ck)))}}
+function screenAll(g){return g.map(x=>({...x,screen:screenGame(x)}))}
+function applyFilters(){let g=CG;if(CF!=='all')g=g.filter(x=>x.screen.verdict===CF);if(CGn)g=g.filter(x=>(x.genres||[]).some(gen=>gen.name===CGn));rF(g)}
+function gFS(games){let f=games;if(CF!=='all')f=f.filter(x=>x.screen.verdict===CF);if(CGn)f=f.filter(x=>(x.genres||[]).some(gen=>gen.name===CGn));if(CS==='score')f.sort((a,b)=>b.screen.score-a.screen.score);else if(CS==='name')f.sort((a,b)=>a.name.localeCompare(b.name));return f}
+function rF(games){$rc.textContent=games.length+' game'+(games.length!==1?'s':'')+' found'+(UF?' (offline)':'');if(!games.length){$res.innerHTML='';$es.style.display='block'}else{$es.style.display='none';$res.innerHTML=games.map(rC).join('')}}
+function rC(g){const s=g.screen,v='verdict-'+s.verdict,vl=s.verdict==='halal'?'Halal':s.verdict==='caution'?'Caution':'Avoid',sc=s.verdict==='halal'?'var(--halal)':s.verdict==='caution'?'var(--caution)':'var(--haram)',img=placeholderImage(g.name,460,215),year=g.released?g.released.split('-')[0]:'';const gn=esc((g.genres||[]).map(x=>x.name).join(', ')),sn=esc(g.name);return'<article class="game-card" data-game-id="'+g.id+'" tabindex="0" role="button" aria-label="View '+sn+'"><div style="aspect-ratio:16/9;overflow:hidden;background:var(--card);min-height:160px"><img src="'+esc(img)+'" alt="'+sn+'" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div><div style="padding:.75rem"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><span class="verdict-badge '+v+'">'+vl+'</span><span style="color:var(--muted);font-size:.6875rem">'+year+'</span></div><h3 style="color:var(--heading);font-size:.875rem;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+sn+'</h3><p style="color:var(--muted);font-size:.75rem;margin-bottom:6px">'+gn+'</p><div style="display:flex;align-items:center;gap:6px"><div class="score-bar" style="flex:1"><div class="score-fill" style="width:'+s.score+'%;background:'+sc+'"></div></div><span style="color:'+sc+';font-size:.6875rem;font-weight:600">'+s.score+'/100</span></div></div></article>'}
+function renderResults(g){CG=screenAll(g);rF(gFS(CG))}
+function showSkel(){$sk.style.display='grid';$sk.style.gridTemplateColumns='repeat(auto-fill,minmax(250px,1fr))';$sk.style.gap='1rem';$sk.innerHTML=Array(6).fill('<div style="background:rgba(18,25,42,.8);border:1px solid var(--border);border-radius:16px;overflow:hidden"><div class="skeleton" style="aspect-ratio:16/9;min-height:160px"></div><div style="padding:.75rem"><div class="skeleton" style="height:16px;width:40%;margin-bottom:6px"></div><div class="skeleton" style="height:14px;width:70%"></div></div></div>').join('');$res.innerHTML='';$es.style.display='none'}
+function hideSkel(){$sk.style.display='none';$sk.innerHTML=''}
+async function handleSearch(){const q=$si.value.trim();if(!q){UF=false;renderResults(MOCK_GAMES);return}showSkel();const g=await fetchGames(q);if(g===null)return;hideSkel();renderResults(g)}
+$si.addEventListener('input',()=>{clearTimeout(DT);DT=setTimeout(handleSearch,300)});
+$si.addEventListener('keydown',e=>{if(e.key==='Escape'){$si.value='';handleSearch()}if(e.key==='Enter'){clearTimeout(DT);handleSearch()}});
+$ss.addEventListener('change',()=>{CS=$ss.value;if(CG.length)applyFilters()});
+function ic(s){if(s==='safe')return'<div class="breakdown-icon icon-safe">\u2713</div>';if(s==='caution')return'<div class="breakdown-icon icon-caution">!</div>';if(s==='info')return'<div class="breakdown-icon icon-safe">\u266A</div>';return'<div class="breakdown-icon icon-haram">\u2717</div>'}
+let lfe=null;function trapF(e){if(e.key!=='Tab')return;const f=$gmc.querySelectorAll('button,[href],input,[tabindex]:not([tabindex="-1"])');if(!f.length)return;const a=f[0],b=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();b.focus()}else if(!e.shiftKey&&document.activeElement===b){e.preventDefault();a.focus()}}
+function openDetail(gid){const g=MOCK_GAMES.find(x=>x.id===gid)||CG.find(x=>x.id===gid);if(!g)return;const s=g.screen||screenGame(g),tips=genTips(s),vl=s.verdict==='halal'?'Halal':s.verdict==='caution'?'Caution':'Avoid',sc=s.verdict==='halal'?'var(--halal)':s.verdict==='caution'?'var(--caution)':'var(--haram)',img=placeholderImage(g.name,640,360),year=g.released?g.released.split('-')[0]:'';const gn=esc((g.genres||[]).map(x=>x.name).join(', ')),esrb=esc(g.esrb_rating?.name||'NR'),sn=esc(g.name),sd=esc(g.description_raw||'No description.'),sl=getStoreLinks(g);$gmc.innerHTML='<button class="modal-close" onclick="closeDetail()">&#10005;</button><div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:1rem;background:var(--bg)"><img src="'+esc(img)+'" alt="'+sn+'" style="width:100%;height:100%;object-fit:cover"></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;flex-wrap:wrap;gap:8px"><h2 id="detail-title" style="color:var(--heading);font-size:1.5rem;font-weight:700">'+sn+'</h2><span style="color:var(--muted);font-size:.875rem">'+year+'</span></div><p style="color:var(--muted);font-size:.8125rem;margin-bottom:.75rem">'+gn+' &middot; ESRB: '+esrb+'</p><div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem"><span class="verdict-badge verdict-'+s.verdict+'" style="font-size:.9375rem;padding:6px 16px">'+vl+'</span><div style="flex:1"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:.75rem;color:var(--muted)">Halal Score</span><span style="font-size:.8125rem;font-weight:600;color:'+sc+'">'+s.score+'/100</span></div><div class="score-bar" style="height:8px"><div class="score-fill" style="width:'+s.score+'%;background:'+sc+'"></div></div></div></div><p style="color:var(--text);font-size:.9375rem;line-height:1.6;margin-bottom:1rem">'+sd+'</p><h3 style="color:var(--heading);font-size:1rem;font-weight:600;margin-bottom:.75rem">Content Breakdown</h3><div style="margin-bottom:1rem"><div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(26,38,66,.4)">'+ic(s.flags.faithImpact.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:.875rem;font-weight:500">Faith Impact</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.faithImpact.detail)+'</div></div></div><div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(26,38,66,.4)">'+ic(s.flags.financialEthics.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:.875rem;font-weight:500">Financial Ethics</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.financialEthics.detail)+'</div></div></div><div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(26,38,66,.4)">'+ic(s.flags.modesty.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:.875rem;font-weight:500">Modesty</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.modesty.detail)+'</div></div></div><div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(26,38,66,.4)">'+ic(s.flags.violenceLevel.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:1rem;font-weight:500">Violence</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.violenceLevel.detail)+'</div></div></div><div style="display:flex;gap:10px;padding:8px 0">'+ic(s.flags.audioContent.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:.875rem;font-weight:500">Audio</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.audioContent.detail)+'</div></div></div></div><h3 style="color:var(--heading);font-size:1rem;font-weight:600;margin-bottom:.5rem">How to Play Safely</h3><div class="tip-box" style="margin-bottom:1rem">'+tips.map(t=>'<p style="color:var(--text);font-size:.875rem;line-height:1.6;margin-bottom:.25rem">\uD83D\uDCA1 '+esc(t)+'</p>').join('')+'</div><h3 style="color:var(--heading);font-size:1rem;font-weight:600;margin-bottom:.5rem">Where to Buy</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:1rem">'+sl.map(l=>'<a href="'+l.url+'" target="_blank" rel="noopener sponsored" style="display:flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:500;text-decoration:none;background:'+(l.cls==='amazon'?'#FF9900;color:#000':l.cls==='steam'?'#1b2838;color:#c7d5e0;border:1px solid #2a475e':l.cls==='ps'?'#003087;color:#fff':l.cls==='xbox'?'#107c10;color:#fff':'#e60012;color:#fff')+'">'+l.label+'</a>').join('')+'</div>'+(s.tags.length?'<details style="margin-top:.5rem"><summary style="color:var(--muted);font-size:.8125rem;cursor:pointer;padding:4px 0">Tags ('+s.tags.length+')</summary><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">'+s.tags.map(t=>'<span style="background:var(--border);color:var(--muted);padding:2px 8px;border-radius:4px;font-size:.6875rem">'+esc(t)+'</span>').join('')+'</div></details>':'');lfe=document.activeElement;$gm.classList.add('open');document.body.style.overflow='hidden';$gmc.querySelector('.modal-close')?.focus();document.addEventListener('keydown',trapF)}
+function closeDetail(){$gm.classList.remove('open');document.body.style.overflow='';document.removeEventListener('keydown',trapF);lfe?.focus()}
+$gm.addEventListener('click',e=>{if(e.target===$gm)closeDetail()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$gm.classList.contains('open'))closeDetail()});
+$res.addEventListener('click',e=>{const c=e.target.closest('.game-card');if(c)openDetail(Number(c.dataset.gameId))});
+$res.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const c=e.target.closest('.game-card');if(c){e.preventDefault();openDetail(Number(c.dataset.gameId))}});
+window.addEventListener('DOMContentLoaded',()=>{renderResults(MOCK_GAMES);setTimeout(()=>$ld.classList.add('hide'),400)});
 
-function voteGame(gameId,dir){
-  const votes=getVotes();
-  const key=''+gameId;
-  if(!votes[key])votes[key]={up:0,down:0,myVote:0};
-  const v=votes[key];
-  if(v.myVote===dir){v[dir>0?'up':'down']--;v.myVote=0}
-  else{if(v.myVote!==0)v[v.myVote>0?'up':'down']--;v[dir>0?'up':'down']++;v.myVote=dir}
-  setVotes(votes);
-  document.querySelectorAll('[data-game-id="'+gameId+'"]').forEach(el=>{
-    const uv=el.querySelector('.vote-up');const dv=el.querySelector('.vote-down');
-    if(uv){uv.textContent='▲ '+(votes[key].up||0);uv.className='vote-btn vote-up'+(votes[key].myVote===1?' voted-up':'')}
-    if(dv){dv.textContent='▼ '+(votes[key].down||0);dv.className='vote-btn vote-down'+(votes[key].myVote===-1?' voted-down':'')}
-  });
-}
-
-let _reportGameId=null;
-function openReport(gameId,gameName){_reportGameId=gameId;document.getElementById('report-game-name').textContent='Reporting: '+gameName;document.getElementById('report-reason').value='';document.getElementById('report-modal').classList.add('open')}
-function closeReportModal(){document.getElementById('report-modal').classList.remove('open')}
-function submitReport(){
-  const reason=document.getElementById('report-reason').value.trim();
-  if(!reason){showToast('Please enter a reason');return}
-  const reports=getReports();reports.push({gameId:_reportGameId,reason,timestamp:Date.now(),status:'pending'});setReports(reports);
-  closeReportModal();showToast('Report submitted. Thank you!');
-}
-function openAdmin(){const pw=prompt('Admin password:');if(pw!=='halalgames2024')return;const reports=getReports();const el=document.getElementById('admin-reports');
-  if(!reports.length){el.innerHTML='<p style="color:var(--muted)">No reports yet.</p>';document.getElementById('admin-modal').classList.add('open');return}
-  el.innerHTML=reports.map((r,i)=>{const game=MOCK_GAMES.find(g=>g.id===r.gameId);const name=game?game.name:'ID:'+r.gameId;return'<div style="padding:.75rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem"><div><div style="color:var(--heading);font-weight:600;font-size:.875rem">'+esc(name)+'</div><div style="color:var(--muted);font-size:.8125rem;margin-top:2px">'+esc(r.reason)+'</div><div style="color:var(--muted);font-size:.6875rem;margin-top:4px">'+new Date(r.timestamp).toLocaleDateString()+'</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button onclick="resolveReport('+i+',1)" style="padding:4px 8px;border-radius:6px;background:rgba(16,185,129,.15);color:var(--halal);border:none;cursor:pointer;font-size:.75rem">Fix</button><button onclick="resolveReport('+i+',-1)" style="padding:4px 8px;border-radius:6px;background:rgba(239,68,68,.15);color:var(--haram);border:none;cursor:pointer;font-size:.75rem">Dismiss</button></div></div>'}).join('');
-  document.getElementById('admin-modal').classList.add('open');
-}
-function resolveReport(i,action){const r=getReports();r.splice(i,1);setReports(r);openAdmin()}
-function closeAdmin(){document.getElementById('admin-modal').classList.remove('open')}
-
-/* ===== STATE ===== */
-let currentGames=[];let currentFilter='all';let currentSort='relevance';let currentGenre='';let searchCache={};let debounceTimer=null;
-let searchController;
-
-const $searchInput=document.getElementById('search-input');
-const $results=document.getElementById('results');
-const $emptyState=document.getElementById('empty-state');
-const $skeletons=document.getElementById('skeletons');
-const $resultCount=document.getElementById('result-count');
-const $sortSelect=document.getElementById('sort-select');
-const $modal=document.getElementById('detail-modal');
-const $detailContent=document.getElementById('detail-content');
-const $loader=document.getElementById('loader');
-
-/* ===== RENDER FILTERS ===== */
-function renderFilters(){
-  const el=document.getElementById('filters');
-  el.innerHTML=[
-    {label:'All Games',filter:'all'},
-    {label:'Halal Friendly',filter:'halal'},
-    {label:'Caution',filter:'caution'},
-    {label:'Avoid',filter:'haram'},
-  ].map(f=>'<button class="chip'+(f.filter===currentFilter?' active':'')+'" data-filter="'+f.filter+'" aria-pressed="'+(f.filter===currentFilter)+'">'+f.label+'</button>').join('')+'';
-  el.querySelectorAll('.chip[data-filter]').forEach(chip=>{
-    chip.addEventListener('click',()=>{
-      el.querySelectorAll('.chip[data-filter]').forEach(c=>{c.classList.remove('active');c.setAttribute('aria-pressed','false')});
-      chip.classList.add('active');chip.setAttribute('aria-pressed','true');
-      currentFilter=chip.dataset.filter;applyFilters();
-    });
-  });
-}
-renderFilters();
-
-/* ===== RENDER GENRE CHIPS ===== */
-function renderGenreChips(){
-  const el=document.getElementById('genre-chips');
-  el.innerHTML='<button class="chip'+(currentGenre===''?' active':'')+'" data-genre="">All Genres</button>'+ALL_GENRES.map(g=>'<button class="chip'+(currentGenre===g?' active':'')+'" data-genre="'+g+'">'+g+'</button>').join('');
-  el.querySelectorAll('.chip[data-genre]').forEach(chip=>{
-    chip.addEventListener('click',()=>{
-      el.querySelectorAll('.chip[data-genre]').forEach(c=>{c.classList.remove('active')});
-      chip.classList.add('active');
-      currentGenre=chip.dataset.genre;applyFilters();
-    });
-  });
-}
-renderGenreChips();
-
-/* ===== API FETCH ===== */
-async function fetchGames(query){
-  if(searchCache[query])return searchCache[query];
-  if(searchController)searchController.abort();
-  searchController=new AbortController();
-  try{
-    const key=CONFIG.RAWG_API_KEY;
-    if(!key||key==='YOUR_RAWG_API_KEY_HERE')throw new Error('No API key');
-    const res=await fetch(CONFIG.API_BASE+'/games?key='+key+'&search='+encodeURIComponent(query)+'&page_size=20',{signal:searchController.signal});
-    if(!res.ok)throw new Error('API error');
-    const data=await res.json();
-    const games=(data.results||[]).map(g=>({...g,description_raw:g.description_raw||g.description||'',esrb_rating:g.esrb_rating||{name:g.rating_top<=2?'Everyone':'Teen'},stores:g.stores||[]}));
-    searchCache[query]=games;return games;
-  }catch(e){
-    if(e.name!=='AbortError')showToast('Using offline database — search limited to built-in catalog');
-    const q=query.toLowerCase();
-    return MOCK_GAMES.filter(g=>g.name.toLowerCase().includes(q)||(g.description_raw||'').toLowerCase().includes(q)||(g.genres||[]).some(gen=>gen.name.toLowerCase().includes(q))||(g.tags||[]).some(t=>t.name.toLowerCase().includes(q)));
-  }
-}
-
-/* ===== RENDER ===== */
-function screenAll(games){return games.map(g=>({...g,screen:screenGame(g)}))}
-function applyFilters(){
-  let games=currentGames;
-  if(currentFilter!=='all')games=games.filter(g=>g.screen.verdict===currentFilter);
-  if(currentGenre)games=games.filter(g=>(g.genres||[]).some(gen=>gen.name===currentGenre));
-  renderFiltered(games);
-}
-function getFilteredSorted(games){
-  let f=games;
-  if(currentFilter!=='all')f=f.filter(g=>g.screen.verdict===currentFilter);
-  if(currentGenre)f=f.filter(g=>(g.genres||[]).some(gen=>gen.name===currentGenre));
-  const votes=getVotes();
-  if(currentSort==='score')f.sort((a,b)=>b.screen.score-a.screen.score);
-  else if(currentSort==='name')f.sort((a,b)=>a.name.localeCompare(b.name));
-  else if(currentSort==='votes')f.sort((a,b)=>((votes[''+b.id]?.up||0)-(votes[''+b.id]?.down||0))-((votes[''+a.id]?.up||0)-(votes[''+a.id]?.down||0)));
-  return f;
-}
-function renderFiltered(games){
-  $resultCount.textContent=games.length+' game'+(games.length!==1?'s':'')+' found';
-  if(!games.length){$results.innerHTML='';$emptyState.style.display='block'}
-  else{$emptyState.style.display='none';$results.innerHTML=games.map(renderCard).join('')}
-}
-function renderCard(game){
-  const s=game.screen;const v='verdict-'+s.verdict;
-  const vl=s.verdict==='halal'?'Halal Friendly':s.verdict==='caution'?'Caution':'Avoid';
-  const sc=s.verdict==='halal'?'var(--halal)':s.verdict==='caution'?'var(--caution)':'var(--haram)';
-  const img=game.background_image||'';
-  const year=game.released?game.released.split('-')[0]:'';
-  const genres=(game.genres||[]).map(g=>g.name).join(', ');
-  const votes=getVotes()[''+game.id]||{up:0,down:0,myVote:0};
-  return '<article class="game-card" data-game-id="'+game.id+'">'+
-    '<button class="report-btn" onclick="event.stopPropagation();openReport('+game.id+',\''+esc(game.name).replace(/'/g,"\\'")+'\')" title="Report this verdict">⚑</button>'+
-    '<div style="aspect-ratio:16/9;overflow:hidden;background:var(--card);min-height:160px">'+
-      (img?'<img src="'+esc(img)+'" alt="'+esc(game.name)+' cover" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'">':'')+
-    '</div>'+
-    '<div style="padding:.875rem">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">'+
-        '<span class="verdict-badge '+v+'">'+vl+'</span>'+
-        '<span style="color:var(--muted);font-size:.6875rem">'+year+'</span>'+
-      '</div>'+
-      '<h3 style="color:var(--heading);font-size:.9375rem;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(game.name)+'</h3>'+
-      '<p style="color:var(--muted);font-size:.75rem;margin-bottom:8px">'+esc(genres)+'</p>'+
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-        '<div class="score-bar" style="flex:1"><div class="score-fill" style="width:'+s.score+'%;background:'+sc+'"></div></div>'+
-        '<span style="color:'+sc+';font-size:.6875rem;font-weight:600">'+s.score+'/100</span>'+
-      '</div>'+
-      '<div style="display:flex;gap:6px">'+
-        '<button class="vote-btn vote-up'+(votes.myVote===1?' voted-up':'')+'" onclick="event.stopPropagation();voteGame('+game.id+',1)">▲ '+(votes.up||0)+'</button>'+
-        '<button class="vote-btn vote-down'+(votes.myVote===-1?' voted-down':'')+'" onclick="event.stopPropagation();voteGame('+game.id+',-1)">▼ '+(votes.down||0)+'</button>'+
-      '</div>'+
-    '</div>'+
-  '</article>';
-}
-function renderResults(games){
-  const screened=screenAll(games);currentGames=screened;
-  const filtered=getFilteredSorted(screened);renderFiltered(filtered);
-}
-function showSkeletons(){$skeletons.style.display='grid';$skeletons.style.gridTemplateColumns='repeat(auto-fill,minmax(260px,1fr))';$skeletons.style.gap='1rem';$skeletons.innerHTML=Array(6).fill('<div style="background:rgba(18,25,42,.8);border:1px solid var(--border);border-radius:16px;overflow:hidden"><div class="skeleton" style="aspect-ratio:16/9"></div><div style="padding:.875rem"><div class="skeleton" style="height:18px;width:40%;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:70%;margin-bottom:6px"></div><div class="skeleton" style="height:12px;width:50%"></div></div></div>').join('');$results.innerHTML='';$emptyState.style.display='none'}
-function hideSkeletons(){$skeletons.style.display='none';$skeletons.innerHTML=''}
-
-/* ===== SEARCH ===== */
-async function handleSearch(){
-  const query=$searchInput.value.trim();
-  if(!query){renderResults(MOCK_GAMES);return}
-  showSkeletons();const games=await fetchGames(query);hideSkeletons();renderResults(games);
-}
-$searchInput.addEventListener('input',()=>{clearTimeout(debounceTimer);debounceTimer=setTimeout(handleSearch,300)});
-$searchInput.addEventListener('keydown',e=>{if(e.key==='Escape'){$searchInput.value='';handleSearch()}if(e.key==='Enter'){clearTimeout(debounceTimer);handleSearch()}});
-$sortSelect.addEventListener('change',()=>{currentSort=$sortSelect.value;if(currentGames.length)applyFilters()});
-
-/* ===== DETAIL MODAL ===== */
-function openDetail(gameId){
-  const game=MOCK_GAMES.find(g=>g.id===gameId)||currentGames.find(g=>g.id===gameId);
-  if(!game)return;
-  const s=game.screen||screenGame(game);const tips=generateTips(s,game);
-  const vl=s.verdict==='halal'?'Halal Friendly':s.verdict==='caution'?'Caution':'Avoid';
-  const sc=s.verdict==='halal'?'var(--halal)':s.verdict==='caution'?'var(--caution)':'var(--haram)';
-  const img=game.background_image||'';const year=game.released?game.released.split('-')[0]:'';
-  const genres=(game.genres||[]).map(g=>g.name).join(', ');const esrb=game.esrb_rating?.name||'Not rated';
-  const storeLinks=getStoreLinks(game);
-  function icon(st){if(st==='safe')return'<div style="width:30px;height:30px;border-radius:8px;background:rgba(16,185,129,.15);color:var(--halal);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">✓</div>';if(st==='caution')return'<div style="width:30px;height:30px;border-radius:8px;background:rgba(245,158,11,.15);color:var(--caution);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">!</div>';return'<div style="width:30px;height:30px;border-radius:8px;background:rgba(239,68,68,.15);color:var(--haram);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">✗</div>'}
-  $detailContent.innerHTML=
-    '<button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>'+
-    (img?'<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:1.25rem;background:var(--bg)"><img src="'+esc(img)+'" alt="'+esc(game.name)+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'"></div>':'')+
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;flex-wrap:wrap;gap:8px"><h2 id="modal-title" style="color:var(--heading);font-size:1.5rem;font-weight:700">'+esc(game.name)+'</h2><span style="color:var(--muted);font-size:.875rem">'+year+'</span></div>'+
-    '<p style="color:var(--muted);font-size:.8125rem;margin-bottom:.75rem">'+esc(genres)+' · ESRB: '+esc(esrb)+'</p>'+
-    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem"><span class="verdict-badge verdict-'+s.verdict+'" style="font-size:.9375rem;padding:6px 16px">'+vl+'</span><div style="flex:1"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><span style="font-size:.75rem;color:var(--muted)">Halal Score</span><span style="font-size:.8125rem;font-weight:600;color:'+sc+'">'+s.score+'/100</span></div><div class="score-bar" style="height:8px"><div class="score-fill" style="width:'+s.score+'%;background:'+sc+'"></div></div></div></div>'+
-    '<p style="color:var(--text);font-size:.9375rem;line-height:1.6;margin-bottom:1.25rem">'+esc(game.description_raw||'No description available.')+'</p>'+
-    '<h3 style="color:var(--heading);font-size:1rem;font-weight:600;margin-bottom:.75rem">Content Breakdown</h3>'+
-    '<div style="margin-bottom:1.25rem">'+
-      '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(26,38,66,.4)">'+icon(s.flags.faithImpact.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:.875rem;font-weight:500">Faith Impact (Shirk/Magic)</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.faithImpact.detail)+'</div></div></div>'+
-      '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(26,38,66,.4)">'+icon(s.flags.financialEthics.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:.875rem;font-weight:500">Financial Ethics (Gambling/Lootboxes)</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.financialEthics.detail)+'</div></div></div>'+
-      '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(26,38,66,.4)">'+icon(s.flags.modesty.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:.875rem;font-weight:500">Modesty (Nudity/Sensuality)</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.modesty.detail)+'</div></div></div>'+
-      '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0">'+icon(s.flags.violenceLevel.status)+'<div style="flex:1"><div style="color:var(--heading);font-size:.875rem;font-weight:500">Violence Level</div><div style="color:var(--muted);font-size:.8125rem">'+esc(s.flags.violenceLevel.detail)+'</div></div></div>'+
-    '</div>'+
-    '<h3 style="color:var(--heading);font-size:1rem;font-weight:600;margin-bottom:.5rem">How to Play Safely</h3>'+
-    '<div class="tip-box" style="margin-bottom:1.25rem">'+tips.map(t=>'<p style="color:var(--text);font-size:.875rem;line-height:1.6;margin-bottom:.5rem">💡 '+esc(t)+'</p>').join('')+'</div>'+
-    '<h3 style="color:var(--heading);font-size:1rem;font-weight:600;margin-bottom:.5rem">Where to Buy</h3>'+
-    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:1rem">'+storeLinks.map(l=>'<a href="'+l.url+'" target="_blank" rel="noopener sponsored" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:.8125rem;font-weight:500;text-decoration:none;transition:all .2s;background:'+(l.cls==='amazon'?'#FF9900;color:#000':l.cls==='steam'?'#1b2838;color:#c7d5e0;border:1px solid #2a475e':l.cls==='playstation'?'#003087;color:#fff':l.cls==='xbox'?'#107c10;color:#fff':'#e60012;color:#fff')+'">'+l.label+'</a>').join('')+'</div>'+
-    (s.tags.length?'<details style="margin-top:.5rem"><summary style="color:var(--muted);font-size:.8125rem;cursor:pointer;padding:4px 0">Show detected tags ('+s.tags.length+')</summary><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">'+s.tags.map(t=>'<span style="background:var(--border);color:var(--muted);padding:2px 8px;border-radius:4px;font-size:.6875rem">'+esc(t)+'</span>').join('')+'</div></details>':'');
-  $modal.classList.add('open');document.body.style.overflow='hidden';
-}
-function closeModal(){$modal.classList.remove('open');document.body.style.overflow=''}
-$modal.addEventListener('click',e=>{if(e.target===$modal)closeModal()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeReportModal();closeAdmin()}});
-
-/* ===== INIT ===== */
-window.addEventListener('DOMContentLoaded',()=>{renderResults(MOCK_GAMES);setTimeout(()=>$loader.classList.add('hide'),400)});
+</script>
 </script>
 </body>
 </html>
