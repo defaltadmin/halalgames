@@ -181,8 +181,8 @@
   </div>
 
   <!-- Detail modal -->
-  <div class="modal-overlay" id="detail-modal" role="dialog" aria-labelledby="detail-title" aria-modal="true" aria-labelledby="detail-title">
-    <div class="modal-content" id="detail-content"></div>
+  <div class="modal-overlay" id="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+    <div class="modal-content" id="detail-content"><h2 id="detail-title" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Game Details</h2></div>
   </div>
 
   <!-- Report modal -->
@@ -491,7 +491,7 @@ function renderCard(game){
   const votes=getVotes()[''+game.id]||{up:0,down:0,myVote:0};
   return '<article class="game-card" data-game-id="'+game.id+'">'+
     '<button class="report-btn" onclick="event.stopPropagation();openReport('+game.id+',\''+esc(game.name).replace(/'/g,"\\'")+'\')" title="Report this verdict">⚑</button>'+
-    '<div style="aspect-ratio:16/9;overflow:hidden;background:var(--card);min-height:160px">'+
+    '<div style="aspect-ratio:16/9;overflow:hidden;background:linear-gradient(135deg,var(--card) 0%,rgba(26,38,66,.5) 100%);min-height:160px">'+
       (img?'<img src="'+esc(img)+'" alt="'+esc(game.name)+' cover" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'">':'')+
     '</div>'+
     '<div style="padding:.875rem">'+
