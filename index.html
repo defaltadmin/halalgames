@@ -264,9 +264,8 @@ function genTips(sr){const t=[];if(sr.flags.faithImpact.status!=='safe')t.push('
 /* ===== VOTES / REPORTS (localStorage) ===== */
 function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
 function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
-function getReports(){try{return JSON.parse(localStorage.getItem('hg_reports')||'[]')}catch{return[]}}
-function setReports(r){try{localStorage.setItem('hg_reports',JSON.stringify(r))}catch{}}
-let _rgid=null;function openReport(gid,gn){_rgid=gid;document.getElementById('report-game-name').textContent='Reporting: '+gn;document.getElementById('report-reason').value='';document.getElementById('report-modal').classList.add('open')}function closeReportModal(){document.getElementById('report-modal').classList.remove('open')}function submitReport(){const r=document.getElementById('report-reason').value.trim();if(!r){showToast('Enter a reason');return}const rp=getReports();rp.push({gameId:_rgid,reason:r,ts:Date.now()});setReports(rp);closeReportModal();showToast('Report submitted!')}
+
+let _rgid=null;function openReport(gid,gn){_rgid=gid;document.getElementById('report-game-name').textContent='Reporting: '+gn;document.getElementById('report-reason').value='';document.getElementById('report-modal').classList.add('open')}function closeReportModal(){document.getElementById('report-modal').classList.remove('open')}async function submitReport(){const r=document.getElementById('report-reason').value.trim();if(!r){showToast('Enter a reason');return}try{await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameId:_rgid,reason:r})});closeReportModal();showToast('Report submitted!')}catch(e){showToast('Report saved locally');const rp=JSON.parse(localStorage.getItem('hg_reports')||'[]');rp.push({id:crypto.randomUUID(),gameId:_rgid,reason:r,ts:Date.now()});localStorage.setItem('hg_reports',JSON.stringify(rp));closeReportModal()}}
 
 /* ===== STATE (bounded cache, normalized keys) ===== */
 let CG=[],CF='all',CS='relevance',CGn='',DT=null,AC=null,UF=false;
@@ -308,21 +307,25 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$gm.classList.conta
 $res.addEventListener('click',e=>{const c=e.target.closest('.game-card');if(c)openDetail(Number(c.dataset.gameId))});
 $res.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const c=e.target.closest('.game-card');if(c){e.preventDefault();openDetail(Number(c.dataset.gameId))}});
 
-/* ===== ADMIN PANEL TRIGGER ===== */
-async function openAdmin(){
+let _adminPw='';async function openAdmin(){
   const pw=prompt('Admin password:');
   if(!pw)return;
   try{
     const res=await fetch('/api/admin-check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
     if(res.status!==200){showToast('Invalid password');return}
-    const rp=getReports();const el=document.getElementById('admin-reports');
+    _adminPw=pw;
+    const rpRes=await fetch('/api/reports',{headers:{'X-Admin-Password':pw}});
+    const rp=rpRes.ok?await rpRes.json():[];
+    const el=document.getElementById('admin-reports');
     if(!rp.length){el.innerHTML='<p style="color:var(--muted)">No reports yet.</p>';document.getElementById('admin-modal').classList.add('open');return}
-    el.innerHTML=rp.map((r,i)=>{const g=MOCK_GAMES.find(x=>x.id===r.gameId);return'<div style="padding:.75rem;border-bottom:1px solid var(--border)"><div style="color:var(--heading);font-weight:600;font-size:.875rem">'+escapeHtml(g?g.name:'ID:'+r.gameId)+'</div><div style="color:var(--muted);font-size:.8125rem">'+escapeHtml(r.reason)+'</div><div style="margin-top:4px"><button onclick="dismissReport('+i+')" style="padding:4px 8px;border-radius:6px;background:rgba(16,185,129,.15);color:var(--halal);border:none;cursor:pointer;font-size:.75rem">Dismiss</button></div></div>'}).join('');
+    el.innerHTML=rp.map(r=>{const g=MOCK_GAMES.find(x=>x.id===r.gameId);return'<div style="padding:.75rem;border-bottom:1px solid var(--border)"><div style="color:var(--heading);font-weight:600;font-size:.875rem">'+esc(g?g.name:'ID:'+r.gameId)+'</div><div style="color:var(--muted);font-size:.8125rem">'+esc(r.reason)+'</div><div style="margin-top:4px"><button onclick="dismissReport(\''+r.id+'\')" style="padding:4px 8px;border-radius:6px;background:rgba(16,185,129,.15);color:var(--halal);border:none;cursor:pointer;font-size:.75rem">Dismiss</button></div></div>'}).join('');
     document.getElementById('admin-modal').classList.add('open');
   }catch(e){showToast('Auth failed')}
 }
-function dismissReport(i){const r=getReports();r.splice(i,1);setReports(r);openAdmin()}
+async function dismissReport(id){try{await fetch('/api/reports?id='+id,{method:'DELETE',headers:{'X-Admin-Password':_adminPw}});openAdmin()}catch(e){showToast('Dismiss failed')}}
 function closeAdmin(){document.getElementById('admin-modal').classList.remove('open')}
+
+
 window.addEventListener('DOMContentLoaded',()=>{renderResults(MOCK_GAMES);setTimeout(()=>$ld.classList.add('hide'),400)});
 
 </script>
