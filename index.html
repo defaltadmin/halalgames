@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; base-uri 'self';">
+
   <title>HalalGames Guide — Search Any Game for Islamic Content Rating | Free Halal Game Screener</title>
   <meta name="description" content="Search any video game and instantly get an Islamic content rating. Free halal game screener checking faith impact, gambling mechanics, modesty, and violence levels. Instant Islamic content ratings for 50+ games. Know before you play.">
   <meta name="keywords" content="halal games, halal video games, muslim friendly games, haram games, islamic gaming, games for muslims, halal game list, gaming in islam, is gaming haram, halal game checker">
@@ -209,6 +209,14 @@
   </div>
 
   <div id="toast" class="toast hide"></div>
+  <!-- Admin panel (triggered by ?admin=1 URL param) -->
+  <div class="modal-overlay" id="admin-modal">
+    <div class="modal-content" style="max-width:640px;padding:1.5rem">
+      <button class="modal-close" onclick="closeAdmin()">&#10005;</button>
+      <h3 style="color:var(--heading);font-size:1.125rem;font-weight:700;margin-bottom:1rem">Admin — Reports</h3>
+      <div id="admin-reports" style="max-height:60vh;overflow-y:auto"></div>
+    </div>
+  </div>
 
 
 <script>
@@ -299,6 +307,22 @@ $gm.addEventListener('click',e=>{if(e.target===$gm)closeModal()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$gm.classList.contains('open'))closeModal()});
 $res.addEventListener('click',e=>{const c=e.target.closest('.game-card');if(c)openDetail(Number(c.dataset.gameId))});
 $res.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const c=e.target.closest('.game-card');if(c){e.preventDefault();openDetail(Number(c.dataset.gameId))}});
+
+/* ===== ADMIN PANEL TRIGGER ===== */
+async function openAdmin(){
+  const pw=prompt('Admin password:');
+  if(!pw)return;
+  try{
+    const res=await fetch('/api/admin-check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+    if(res.status!==200){showToast('Invalid password');return}
+    const rp=getReports();const el=document.getElementById('admin-reports');
+    if(!rp.length){el.innerHTML='<p style="color:var(--muted)">No reports yet.</p>';document.getElementById('admin-modal').classList.add('open');return}
+    el.innerHTML=rp.map((r,i)=>{const g=MOCK_GAMES.find(x=>x.id===r.gameId);return'<div style="padding:.75rem;border-bottom:1px solid var(--border)"><div style="color:var(--heading);font-weight:600;font-size:.875rem">'+escapeHtml(g?g.name:'ID:'+r.gameId)+'</div><div style="color:var(--muted);font-size:.8125rem">'+escapeHtml(r.reason)+'</div><div style="margin-top:4px"><button onclick="dismissReport('+i+')" style="padding:4px 8px;border-radius:6px;background:rgba(16,185,129,.15);color:var(--halal);border:none;cursor:pointer;font-size:.75rem">Dismiss</button></div></div>'}).join('');
+    document.getElementById('admin-modal').classList.add('open');
+  }catch(e){showToast('Auth failed')}
+}
+function dismissReport(i){const r=getReports();r.splice(i,1);setReports(r);openAdmin()}
+function closeAdmin(){document.getElementById('admin-modal').classList.remove('open')}
 window.addEventListener('DOMContentLoaded',()=>{renderResults(MOCK_GAMES);setTimeout(()=>$ld.classList.add('hide'),400)});
 
 </script>
