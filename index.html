@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self';">
   <title>HalalGames Guide — Search Any Game for Islamic Content Rating | Free Halal Game Screener</title>
   <meta name="description" content="Search any video game and instantly get an Islamic content rating. Free halal game screener checking faith impact, gambling mechanics, modesty, and violence levels. Community-powered verdicts. Know before you play.">
   <meta name="keywords" content="halal games, halal video games, muslim friendly games, haram games, islamic gaming, games for muslims, halal game list, gaming in islam, is gaming haram, halal game checker">
@@ -25,13 +26,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={theme:{extend:{fontFamily:{body:['Inter','system-ui','sans-serif'],heading:['Space Grotesk','Inter','system-ui','sans-serif']},colors:{deep:'#06070b',surface:'#0c1018',card:'#12192a',border:'#1a2642',halal:'#10B981',caution:'#F59E0B',haram:'#EF4444',brand:'#818cf8'}}}}</script>
   <style>
-    :root{--bg:#06070b;--surface:#0c1018;--card:#12192a;--border:#1a2642;--text:#c8d6e5;--heading:#f0f4f8;--muted:#7d91ad;--halal:#10B981;--caution:#F59E0B;--haram:#EF4444;--brand:#818cf8}
+    :root{--bg:#06070b;--surface:#0c1018;--card:#12192a;--border:#1a2642;--text:#c8d6e5;--heading:#f0f4f8;--muted:#7d91ad;--halal:#10B981;--caution:#F59E0B;--haram:#f87171;--brand:#818cf8}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
     body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh}
     h1,h2,h3,h4{font-family:'Space Grotesk','Inter',system-ui,sans-serif}
     .animated-bg{position:fixed;inset:0;z-index:0;overflow:hidden}
-    .animated-bg::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 20% 50%,rgba(16,185,129,.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(129,140,248,.06) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(239,68,68,.04) 0%,transparent 50%);animation:bgDrift 20s ease-in-out infinite alternate}
+    .animated-bg::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 20% 50%,rgba(16,185,129,.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(129,140,248,.06) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(248,113,113,.04) 0%,transparent 50%);animation:bgDrift 20s ease-in-out infinite alternate}
     @keyframes bgDrift{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(-3%,2%) rotate(3deg)}}
     .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.4;animation:orbFloat 15s ease-in-out infinite alternate;pointer-events:none;z-index:0}
     .orb-1{width:300px;height:300px;background:rgba(16,185,129,.12);top:10%;left:5%}
@@ -51,7 +52,7 @@
     .verdict-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
     .v-halal{background:rgba(16,185,129,.15);color:var(--halal)}
     .v-caution{background:rgba(245,158,11,.15);color:var(--caution)}
-    .v-haram{background:rgba(239,68,68,.15);color:var(--haram)}
+    .v-haram{background:rgba(248,113,113,.15);color:var(--haram)}
     .score-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
     .score-fill{height:100%;border-radius:3px;transition:width .5s ease}
     .chip{display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;font-size:.8125rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s}
@@ -65,10 +66,10 @@
     .vote-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:.75rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s}
     .vote-btn:hover{border-color:var(--brand);color:var(--heading)}
     .vote-btn.voted-up{border-color:var(--halal);color:var(--halal);background:rgba(16,185,129,.1)}
-    .vote-btn.voted-down{border-color:var(--haram);color:var(--haram);background:rgba(239,68,68,.1)}
+    .vote-btn.voted-down{border-color:var(--haram);color:var(--haram);background:rgba(248,113,113,.1)}
     .report-btn{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;background:rgba(0,0,0,.5);color:var(--muted);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0;transition:all .2s;z-index:2}
     .game-card:hover .report-btn{opacity:1}
-    .report-btn:hover{color:var(--haram);background:rgba(239,68,68,.2)}
+    .report-btn:hover{color:var(--haram);background:rgba(248,113,113,.2)}
     .tip-box{background:rgba(129,140,248,.06);border:1px solid rgba(129,140,248,.15);border-radius:12px;padding:14px 18px}
     .skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(26,38,66,.5) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -76,6 +77,13 @@
     .toast.hide{opacity:0}
     @media(max-width:640px){.game-cards{grid-template-columns:1fr!important}.modal-content{padding:1.25rem;border-radius:16px}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}.animated-bg::before{animation:none}.orb{animation:none}}
+  
+    .game-card:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+    .chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+    .breakdown-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+    .icon-safe{background:rgba(16,185,129,.15);color:var(--halal)}
+    .icon-caution{background:rgba(245,158,11,.15);color:var(--caution)}
+    .icon-haram{background:rgba(248,113,113,.15);color:var(--haram)}
   </style>
 </head>
 <body>
@@ -256,5 +264,6 @@ window.addEventListener('DOMContentLoaded',()=>{renderResults(MOCK_GAMES);setTim
 </script>
 </body>
 </html>
+
 
 
