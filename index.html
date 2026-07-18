@@ -217,7 +217,7 @@ function placeholderImage(name,w,h){const i=String(name).trim().split(/\s+/).sli
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hide');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hide'),3500)}
 
 /* ===== CONFIG ===== */
-const CONFIG={RAWG_API_KEY:'772db6db7cf24515af0abca4b3c2c403',API_BASE:'https://api.rawg.io/api'};
+const CONFIG={RAWG_API_KEY:'YOUR_KEY_HERE',API_BASE:'https://api.rawg.io/api'};
 
 /* ===== CURATED HALAL PICKS ===== */
 const HALAL_PICKS=[
@@ -384,7 +384,7 @@ function submitReport(){
   const reports=getReports();reports.push({gameId:_reportGameId,reason,timestamp:Date.now(),status:'pending'});setReports(reports);
   closeReportModal();showToast('Report submitted. Thank you!');
 }
-function openAdmin(){const pw=prompt('Admin password:');if(pw!=='halalgames2024')return;const reports=getReports();const el=document.getElementById('admin-reports');
+function openAdmin(){const pw=prompt('Admin password:');if(pw!=='CHANGE_ME_ADMIN_PASSWORD')return;const reports=getReports();const el=document.getElementById('admin-reports');
   if(!reports.length){el.innerHTML='<p style="color:var(--muted)">No reports yet.</p>';document.getElementById('admin-modal').classList.add('open');return}
   el.innerHTML=reports.map((r,i)=>{const game=MOCK_GAMES.find(g=>g.id===r.gameId);const name=game?game.name:'ID:'+r.gameId;return'<div style="padding:.75rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem"><div><div style="color:var(--heading);font-weight:600;font-size:.875rem">'+esc(name)+'</div><div style="color:var(--muted);font-size:.8125rem;margin-top:2px">'+esc(r.reason)+'</div><div style="color:var(--muted);font-size:.6875rem;margin-top:4px">'+new Date(r.timestamp).toLocaleDateString()+'</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button onclick="resolveReport('+i+',1)" style="padding:4px 8px;border-radius:6px;background:rgba(16,185,129,.15);color:var(--halal);border:none;cursor:pointer;font-size:.75rem">Fix</button><button onclick="resolveReport('+i+',-1)" style="padding:4px 8px;border-radius:6px;background:rgba(248,113,113,.15);color:var(--haram);border:none;cursor:pointer;font-size:.75rem">Dismiss</button></div></div>'}).join('');
   document.getElementById('admin-modal').classList.add('open');
