@@ -400,7 +400,7 @@ dialog::backdrop{background:rgba(5,8,15,.82);backdrop-filter:blur(6px)}
         <button class="vbtn" id="view-list" aria-pressed="false" aria-label="List view"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="3" rx="1"/><rect x="3" y="10.5" width="18" height="3" rx="1"/><rect x="3" y="17" width="18" height="3" rx="1"/></svg></button>
       </div>
     </div>
-    <div class="genre-row" id="genres" role="group" aria-label="Filter by genre"></div>
+    <div class="catalog-toolbar"><div><p class="eyebrow" style="color:var(--cyan);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Your screened library</p><h2 id="catalog-title" style="color:var(--heading);font-size:1.5rem;font-weight:700">Find something worth playing</h2></div><div class="catalog-actions"><button class="catalog-view active" data-view="grid">Grid</button><button class="catalog-view" data-view="compact">Compact</button><select id="catalog-sort" aria-label="Sort games"><option value="recommended">Recommended</option><option value="name">Name</option><option value="score">Highest score</option><option value="recent">Recently reviewed</option></select></div></div><div class="genre-row" id="genres" role="group" aria-label="Filter by genre"></div>
     <div class="result-meta" id="result-meta" aria-live="polite"></div>
     <div class="grid" id="results"></div>
   </section>
