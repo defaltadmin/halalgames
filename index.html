@@ -1,43 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- skill:chrome -->
 <style>
-/* Credit line — bottom-right */
-.design-ui-credit {
-  position: fixed;
-  bottom: 12px;
-  right: 12px;
-  font: 11px/1 system-ui, sans-serif;
-  color: rgba(128,128,128,0.5);
-  pointer-events: none;
-  z-index: 2147483647;
-  transition: opacity 0.4s ease;
-  user-select: none;
-  letter-spacing: 0.02em;
-}
-
-/* Hide chrome on touch devices */
-@media (hover: none) {
-  .design-ui-credit { display: none; }
-}
-
-/* Print fixes */
-@media print {
-  * {
-    transition: none !important;
-    animation: none !important;
-    box-shadow: none !important;
-  }
-  body {
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-  .design-ui-credit { display: none !important; }
-}
-
-
-    .vote-row{display:flex;gap:6px;align-items:center;margin-top:var(--sp-2)}
+.vote-row{display:flex;gap:6px;align-items:center;margin-top:var(--sp-2)}
     .vote-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:.7rem;padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .2s var(--ease)}
     .vote-btn:hover{border-color:var(--border-lit);color:var(--text)}
     .vote-btn.voted-up{border-color:var(--halal);color:var(--halal);background:rgba(52,211,153,.1)}
@@ -91,54 +57,7 @@
     @media(max-width:680px){.admin-modal{padding:18px}.admin-toolbar,.review-row-head,.admin-filters,.review-fields{align-items:stretch;flex-direction:column}.admin-filters{position:static}}
   </style>
 <dialog id="admin-dialog"><div class="admin-modal glass-surface"><button class="modal-close" id="close-admin" type="button" aria-label="Close">&#10005;</button><div id="admin-login"><p class="eyebrow" style="color:var(--cyan);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Private workspace</p><h2 style="color:var(--heading);margin:8px 0">Review uncertain games</h2><p style="color:var(--muted);margin-bottom:16px">Search each title, inspect the sources, then save your verdict.</p><form id="admin-login-form"><label for="admin-password" style="color:var(--muted);font-size:.75rem;display:block;margin-bottom:4px">Admin password</label><input id="admin-password" type="password" required style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:9px;margin-bottom:12px"><button type="submit" style="background:var(--cyan);color:var(--bg);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;width:100%">Unlock review queue</button></form></div><div id="admin-workspace" hidden><div class="admin-toolbar"><div><p class="eyebrow" style="color:var(--cyan);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Review queue</p><h2 style="color:var(--heading)">Unreviewed games</h2><p id="admin-count" class="muted"></p></div><button id="save-catalog" style="background:var(--cyan);color:var(--bg);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer">Save changes</button></div><div class="admin-filters"><input id="admin-search" type="search" placeholder="Filter review queue..." aria-label="Filter review queue"><select id="admin-verdict-filter" aria-label="Filter by verdict"><option value="unreviewed">Unreviewed only</option><option value="all">All games</option><option value="halal">Halal</option><option value="caution">Caution</option><option value="haram">Avoid</option></select></div><div id="admin-game-list"></div><p id="admin-status" class="admin-status" aria-live="polite"></p></div></div></dialog>
-<script>
-(function () {
-    // Design-ui pages are single compositions, so the whole body is editable.
-    function markEditable() {
-        document.body.classList.add('artifact-editable');
-    }
 
-    // Credit badge with idle-fade. Hover devices only.
-    function initChromeUI() {
-        if (!matchMedia('(hover: hover)').matches) return;
-
-        var credit = document.createElement('div');
-        credit.className = 'design-ui-credit';
-        credit.setAttribute('aria-hidden', 'true');
-        credit.innerHTML = '\u{1F49C} by ClickUp Brain';
-        document.body.appendChild(credit);
-
-        var timer = null;
-        var fade = function (out) { credit.style.opacity = out ? '0' : ''; };
-        fade(true);
-        var show = function () {
-            fade(false);
-            clearTimeout(timer);
-            timer = setTimeout(function () { fade(true); }, 3000);
-        };
-        document.addEventListener('mousemove', show);
-        show();
-    }
-
-    function init() {
-        markEditable();
-        initChromeUI();
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        
-/* ===== VOTING ===== */
-function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
-function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
-function voteGame(gid,dir){const v=getVotes(),k=''+gid;if(!v[k])v[k]={up:0,dn:0,mv:0};const x=v[k];if(x.mv===dir){x[dir>0?'up':'dn']--;x.mv=0}else{if(x.mv!==0)x[x.mv>0?'up':'dn']--;x[dir>0?'up':'dn']++;x.mv=dir}setVotes(v);document.querySelectorAll('[data-game-id="'+gid+'"]').forEach(el=>{const u=el.querySelector('.vu'),d=el.querySelector('.vd');if(u){u.textContent='\u25B2 '+(v[k].up||0);u.className='vote-btn vu'+(v[k].mv===1?' voted-up':'')}if(d){d.textContent='\u25BC '+(v[k].dn||0);d.className='vote-btn vd'+(v[k].mv===-1?' voted-down':'')}})}
-init();
-    }
-})();
-
-</script>
-<!-- /skill:chrome -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HalalGames Guide: Islamic Content Ratings for Games</title>

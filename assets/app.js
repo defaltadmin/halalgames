@@ -1,5 +1,13 @@
-﻿/* ===== HELPERS ===== */
-function esc(s){return s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+/* ===== HELPERS ===== */
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
 function placeholderImage(name){const i=String(name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();return i||'?';}
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let toastT;
@@ -33,7 +41,25 @@ function canLinkStore(g){return g.verdict==='halal'&&(g.screeningStatus||'unrevi
 function renderStoreLinks(g){if(!canLinkStore(g))return`<span class="store-locked">Store links hidden until reviewed</span>`;return`<div class="stores">${g.stores.slice(0,2).map(st=>`<a class="store-link" href="${esc(storeUrl(st,g.name))}" target="_blank" rel="noopener noreferrer sponsored">${esc(st)}</a>`).join('')}</div>`;}
 function cardHTML(g){const s=verdictOf(g);const status=g.screeningStatus||'unreviewed';const why=s.reasons[0]||s.warnings[0]||'Awaiting content review.';return`<article class="game-card status-${status}" data-slug="${esc(g.slug)}"><div class="card-meta"><span class="status-dot"></span><span>${{halal:'Screened',caution:'Caution',haram:'Avoid',unreviewed:'Unreviewed'}[status]||'Unreviewed'}</span><span class="score">${Number.isFinite(s.score)?s.score+'/100':'Pending'}</span></div><h3>${esc(g.name)}</h3>${renderTags(g)}<p>${esc(why)}</p><div class="card-footer"><button class="details-button" data-game-slug="${esc(g.slug)}">View details</button>${renderStoreLinks(g)}</div></article>`;}
 function currentSet(){let set=STATE.all.slice();if(STATE.query){const q=STATE.query.toLowerCase();set=set.filter(g=>g.name.toLowerCase().includes(q));}if(STATE.verdict!=='all')set=set.filter(g=>verdictOf(g).verdict===STATE.verdict);if(STATE.genre)set=set.filter(g=>(g.genres||[]).some(x=>x.toLowerCase()===STATE.genre.toLowerCase()));if(STATE.sort==='score-desc')set.sort((a,b)=>verdictOf(b).score-verdictOf(a).score);else if(STATE.sort==='score-asc')set.sort((a,b)=>verdictOf(a).score-verdictOf(b).score);else if(STATE.sort==='name')set.sort((a,b)=>a.name.localeCompare(b.name));return set;}
-function applyFilters(){const set=currentSet();const box=$('#results');box.className='grid'+(STATE.view==='list'?' list':'');if(!set.length){box.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">No games found</div><div>Try a different search, or clear the filters.</div></div>`;$('#result-meta').textContent='';document.body.removeAttribute('data-mood');return;}box.innerHTML=set.map(cardHTML).join('');$('#result-meta').textContent=`${set.length} game${set.length===1?'':'}${STATE.query?` matching "${STATE.query}"`:''}`;const tally={halal:0,caution:0,haram:0};set.forEach(g=>tally[verdictOf(g).verdict]++);const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);document.body.setAttribute('data-mood',mood);}
+function applyFilters(){
+  const set=currentSet();
+  const box=$('#results');
+  box.className='grid'+(STATE.view==='list'?' list':'');
+  if(!set.length){
+    box.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">No games found</div><div>Try a different search, or clear the filters.</div></div>`;
+    $('#result-meta').textContent='';
+    document.body.removeAttribute('data-mood');
+    return;
+  }
+  box.innerHTML=set.map(cardHTML).join('');
+  const countLabel = set.length + ' game' + (set.length === 1 ? '' : 's');
+  const queryLabel = STATE.query ? ' matching "' + esc(STATE.query) + '"' : '';
+  $('#result-meta').textContent = countLabel + queryLabel;
+  const tally={halal:0,caution:0,haram:0};
+  set.forEach(g=>tally[verdictOf(g).verdict]++);
+  const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);
+  document.body.setAttribute('data-mood',mood);
+}
 
 /* ===== GENRES ===== */
 function buildGenres(){const counts={};STATE.all.forEach(g=>(g.genres||[]).forEach(x=>counts[x]=(counts[x]||0)+1));const ordered=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);const row=$('#genres');if(!row)return;const shown=STATE.genresExpanded?ordered:ordered.slice(0,6);row.innerHTML=shown.map(g=>`<button class="chip" data-genre="${esc(g)}" aria-pressed="${STATE.genre===g}">${esc(g)}</button>`).join('');if(ordered.length>6){const b=document.createElement('button');b.className='chip chip-toggle';b.textContent=STATE.genresExpanded?'\u2212 Less':`+ ${ordered.length-6} more`;b.addEventListener('click',()=>{STATE.genresExpanded=!STATE.genresExpanded;buildGenres();});row.appendChild(b);}}
@@ -59,13 +85,92 @@ function voteGame(gid,dir){const v=getVotes(),k=''+gid;if(!v[k])v[k]={up:0,dn:0,
 /* ===== STEAM LIBRARY ===== */
 function normalizeTitle(v){return String(v||'').toLowerCase().replace(/[TM\u2122:!?'".,\-]/g,' ').replace(/\s+/g,' ').trim();}
 function matchSteamGame(steamGame){const title=normalizeTitle(steamGame.name);return STATE.seed.find(g=>g.steamAppId&&Number(g.steamAppId)===Number(steamGame.appid))||STATE.seed.find(g=>normalizeTitle(g.name)===title);}
-function renderSteamResults(ownedGames){const groups={halal:[],caution:[],haram:[],unknown:[]};ownedGames.forEach(owned=>{const game=matchSteamGame(owned);if(!game||game.screeningStatus!=='community-reviewed'){groups.unknown.push(owned);}else{groups[game.verdict]?.push(game);}});$('#steam-results').innerHTML=`<div class="steam-summary"><div><strong>${groups.halal.length}</strong><span>Screened halal</span></div><div><strong>${groups.caution.length}</strong><span>Caution</span></div><div><strong>${groups.haram.length}</strong><span>Avoid</span></div><div><strong>${groups.unknown.length}</strong><span>Needs review</span></div></div><h3 style="color:var(--heading);margin:16px 0 8px">Screened matches</h3><div class="grid">${groups.halal.map(({game})=>cardHTML(game)).join('')||'<p style="color:var(--muted)">No matches yet.</p>'}</div><h3 style="color:var(--heading);margin:16px 0 8px">Not yet reviewed</h3><div class="steam-unknown">${groups.unknown.map(({owned})=>`<div class="unreviewed-row"><span>${esc(owned.name)}</span><span>Not in the reviewed catalog</span></div>`).join('')||'<p style="color:var(--muted)">Everything matched.</p>'}</div>`;}
+function renderSteamResults(ownedGames){
+  const groups={halal:[],caution:[],haram:[],unknown:[]};
+  for(const owned of ownedGames||[]){
+    const game=matchSteamGame(owned);
+    if(!game||game.screeningStatus!=='community-reviewed'){groups.unknown.push({owned,game});continue;}
+    if(groups[game.verdict]){groups[game.verdict].push({owned,game});}
+    else{groups.unknown.push({owned,game});}
+  }
+  $('#steam-results').innerHTML=`
+    <div class="steam-summary">
+      <div><strong>${groups.halal.length}</strong><span>Screened halal</span></div>
+      <div><strong>${groups.caution.length}</strong><span>Caution</span></div>
+      <div><strong>${groups.haram.length}</strong><span>Avoid</span></div>
+      <div><strong>${groups.unknown.length}</strong><span>Needs review</span></div>
+    </div>
+    <h3 style="color:var(--heading);margin:16px 0 8px">Screened matches</h3>
+    <div class="grid">${groups.halal.map(({game})=>cardHTML(game)).join('')||'<p style="color:var(--muted)">No screened matches yet.</p>'}</div>
+    <h3 style="color:var(--heading);margin:16px 0 8px">Not yet reviewed</h3>
+    <div class="steam-unknown">${groups.unknown.map(({owned})=>`<div class="unreviewed-row"><span>${esc(owned.name)}</span><span>Not in the reviewed catalog</span></div>`).join('')||'<p style="color:var(--muted)">Everything matched.</p>'}</div>`;
+}
 
 /* ===== ADMIN REVIEW ===== */
 let adminPassword='';let adminVersion=0;let adminGames=[];
-function researchUrl(game,source){const q={general:`${game.name} game content review`,gambling:`${game.name} loot boxes gambling microtransactions`,violence:`${game.name} violence gore content warnings`,modesty:`${game.name} nudity sexual content review`,faith:`${game.name} magic mythology gods religious themes`,rating:`${game.name} ESRB PEGI content descriptors`};return'https://www.google.com/search?q='+encodeURIComponent(q[source]||q.general);}
-function researchLinks(game){return`<div class="research-links"><a href="${researchUrl(game,'general')}" target="_blank" rel="noopener noreferrer">Search overview</a><a href="${researchUrl(game,'faith')}" target="_blank" rel="noopener noreferrer">Faith themes</a><a href="${researchUrl(game,'gambling')}" target="_blank" rel="noopener noreferrer">Gambling</a><a href="${researchUrl(game,'violence')}" target="_blank" rel="noopener noreferrer">Violence</a><a href="${researchUrl(game,'modesty')}" target="_blank" rel="noopener noreferrer">Modesty</a><a href="${researchUrl(game,'rating')}" target="_blank" rel="noopener noreferrer">ESRB / PEGI</a></div>`;}
-function renderAdminGame(game){const v=game.verdict||'unreviewed';const bf=(f,l)=>{const val=game.filters?.[f];return`<label class="review-check"><input type="checkbox" data-filter="${f}" ${val===true?'checked':''} ${val===null?'data-unknown="true"':''}><span>${l}</span></label>`;};return`<article class="review-row" data-slug="${esc(game.slug)}"><div class="review-row-head"><div><h3>${esc(game.name)}</h3><div class="review-tags">${(game.genres||[]).map(g=>`<span class="tag tag-genre">${esc(g)}</span>`).join('')}</div></div><a class="research-primary" href="${researchUrl(game)}" target="_blank" rel="noopener noreferrer">Research</a></div>${researchLinks(game)}<div class="review-fields"><label>Verdict<select data-field="verdict"><option value="unreviewed" ${v==='unreviewed'?'selected':''}>Unreviewed</option><option value="halal" ${v==='halal'?'selected':''}>Halal</option><option value="caution" ${v==='caution'?'selected':''}>Caution</option><option value="haram" ${v==='haram'?'selected':''}>Avoid</option></select></label><label>Confidence<select data-field="reviewConfidence"><option value="none">None</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Score<input type="number" min="0" max="100" data-field="score" value="${Number.isFinite(game.score)?game.score:''}" placeholder="0-100"></label></div><div class="review-checks">${bf('noCombat','No combat')}${bf('noGambling','No gambling')}${bf('noNudity','No nudity')}${bf('noMagic','No magic')}${bf('singleplayer','Single-player')}${bf('coOp','Co-op')}</div><label class="review-wide-field">Reasons<textarea data-field="reasons" placeholder="Why did you choose this verdict?">${esc((game.reasons||[]).join('\n'))}</textarea></label><label class="review-wide-field">Warnings<textarea data-field="warnings" placeholder="What should players watch for?">${esc((game.warnings||[]).join('\n'))}</textarea></label><label class="review-wide-field">Admin notes<textarea data-field="adminNote" placeholder="Private notes, source summary, or follow-up">${esc(game.adminNote||'')}</textarea></label></article>`;}
+
+function researchUrl(game,source){
+  const q={general:`${game.name} game content review`,gambling:`${game.name} loot boxes gambling microtransactions`,violence:`${game.name} violence gore content warnings`,modesty:`${game.name} nudity sexual content review`,faith:`${game.name} magic mythology gods religious themes`,rating:`${game.name} ESRB PEGI content descriptors`};
+  return 'https://www.google.com/search?q='+encodeURIComponent(q[source]||q.general);
+}
+
+function researchLinks(game){
+  const searches={
+    overview:`${game.name} game content review`,
+    faith:`${game.name} magic mythology gods religious themes`,
+    gambling:`${game.name} loot boxes gambling microtransactions`,
+    violence:`${game.name} violence gore content warnings`,
+    modesty:`${game.name} nudity sexual content review`,
+    rating:`${game.name} ESRB PEGI content descriptors`
+  };
+  return `<div class="research-links">
+    <a href="https://www.google.com/search?q=${encodeURIComponent(searches.overview)}" target="_blank" rel="noopener noreferrer">Overview</a>
+    <a href="https://www.google.com/search?q=${encodeURIComponent(searches.faith)}" target="_blank" rel="noopener noreferrer">Faith themes</a>
+    <a href="https://www.google.com/search?q=${encodeURIComponent(searches.gambling)}" target="_blank" rel="noopener noreferrer">Gambling</a>
+    <a href="https://www.google.com/search?q=${encodeURIComponent(searches.violence)}" target="_blank" rel="noopener noreferrer">Violence</a>
+    <a href="https://www.google.com/search?q=${encodeURIComponent(searches.modesty)}" target="_blank" rel="noopener noreferrer">Modesty</a>
+    <a href="https://www.google.com/search?q=${encodeURIComponent(searches.rating)}" target="_blank" rel="noopener noreferrer">ESRB / PEGI</a>
+  </div>`;
+}
+
+function filterControl(game, field, label){
+  const value=game.filters?.[field];
+  return `<label class="review-check">
+    <input type="checkbox" data-filter="${field}" ${value===true?'checked':''}>
+    <span>${esc(label)}</span>
+  </label>`;
+}
+
+function renderAdminGame(game){
+  const v=game.verdict||'unreviewed';
+  return `<article class="review-row" data-slug="${esc(game.slug)}">
+    <div class="review-row-head">
+      <div>
+        <h3>${esc(game.name)}</h3>
+        <div class="review-tags">${(game.genres||[]).map(g=>`<span class="tag tag-genre">${esc(g)}</span>`).join('')}</div>
+      </div>
+      <a class="research-primary" href="${researchUrl(game)}" target="_blank" rel="noopener noreferrer">Research</a>
+    </div>
+    ${researchLinks(game)}
+    <div class="review-fields">
+      <label>Verdict<select data-field="verdict"><option value="unreviewed" ${v==='unreviewed'?'selected':''}>Unreviewed</option><option value="halal" ${v==='halal'?'selected':''}>Halal</option><option value="caution" ${v==='caution'?'selected':''}>Caution</option><option value="haram" ${v==='haram'?'selected':''}>Avoid</option></select></label>
+      <label>Confidence<select data-field="reviewConfidence"><option value="none">None</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      <label>Score<input type="number" min="0" max="100" data-field="score" value="${Number.isFinite(game.score)?game.score:''}" placeholder="0-100"></label>
+    </div>
+    <div class="review-checks">
+      ${filterControl(game,'noCombat','No combat')}
+      ${filterControl(game,'noGambling','No gambling')}
+      ${filterControl(game,'noNudity','No nudity')}
+      ${filterControl(game,'noMagic','No magic')}
+      ${filterControl(game,'singleplayer','Single-player')}
+      ${filterControl(game,'coOp','Co-op')}
+    </div>
+    <label class="review-wide-field">Reasons<textarea data-field="reasons" placeholder="Why did you choose this verdict?">${esc((game.reasons||[]).join('\n'))}</textarea></label>
+    <label class="review-wide-field">Warnings<textarea data-field="warnings" placeholder="What should players watch for?">${esc((game.warnings||[]).join('\n'))}</textarea></label>
+    <label class="review-wide-field">Admin notes<textarea data-field="adminNote" placeholder="Private notes, source summary, or follow-up">${esc(game.adminNote||'')}</textarea></label>
+  </article>`;
+}
+
 function readAdminRow(row,original){const get=f=>row.querySelector(`[data-field="${f}"]`);const verdict=get('verdict').value;const confidence=get('reviewConfidence').value;const scoreVal=Number(get('score').value);const filters={...(original.filters||{})};row.querySelectorAll('[data-filter]').forEach(inp=>{filters[inp.dataset.filter]=inp.checked;});return{...original,verdict,screeningStatus:verdict==='unreviewed'?'unreviewed':'community-reviewed',reviewConfidence:verdict==='unreviewed'?'none':confidence,score:verdict==='unreviewed'?null:Number.isFinite(scoreVal)?Math.max(0,Math.min(100,scoreVal)):null,reasons:get('reasons').value.split('\n').map(x=>x.trim()).filter(Boolean),warnings:get('warnings').value.split('\n').map(x=>x.trim()).filter(Boolean),adminNote:get('adminNote').value.trim(),filters,lastReviewedAt:verdict==='unreviewed'?null:new Date().toISOString().slice(0,10),stores:verdict==='halal'?original.stores||[]:[]};}
 function renderAdminQueue(){const q=($('#admin-search')?.value||'').toLowerCase();const vf=$('#admin-verdict-filter')?.value||'all';const filtered=adminGames.filter(g=>{const mq=!q||g.name.toLowerCase().includes(q)||(g.genres||[]).some(x=>x.toLowerCase().includes(q));const mv=vf==='all'||(g.verdict||'unreviewed')===vf;return mq&&mv;});if($('#admin-count'))$('#admin-count').textContent=`${filtered.length} of ${adminGames.length} games`;if($('#admin-game-list'))$('#admin-game-list').innerHTML=filtered.length?filtered.map(renderAdminGame).join(''):'<p class="empty">No games match this filter.</p>';}
 async function openAdminWorkspace(){$('#admin-login').hidden=true;$('#admin-workspace').hidden=false;const r=await fetch('/api/admin-games',{headers:{'X-Admin-Password':adminPassword}});const p=await r.json();if(!r.ok)throw new Error(p.error||'Could not load review queue.');adminGames=p.games||STATE.seed.slice();adminVersion=p.version||0;renderAdminQueue();}
