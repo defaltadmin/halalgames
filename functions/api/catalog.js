@@ -19,7 +19,7 @@ function normalizeGame(game) {
     reasons: Array.isArray(game.reasons) ? game.reasons : [],
     warnings: Array.isArray(game.warnings) ? game.warnings : [],
     alternatives: Array.isArray(game.alternatives) ? game.alternatives : [],
-    sources: Array.isArray(game.sources) ? game.sources : [],
+    sources: Array.isArray(game.sources) ? game.sources.slice(0, 12) : [],
     stores: Array.isArray(game.stores) ? game.stores : [],
     reviewConfidence: game.reviewConfidence || 'none',
     lastReviewedAt: game.lastReviewedAt || null,
@@ -36,20 +36,42 @@ function normalizeGame(game) {
   };
 }
 
-export async function onRequestGet({ env }) {
-  if (!env.CATALOG_KV) {
-    return json({ error: 'Catalog KV is not configured.' }, 503);
+export async function onRequestGet({ env, request }) {
+  let catalog = null;
+
+  if (env.CATALOG_KV) {
+    try {
+      catalog = await env.CATALOG_KV.get('catalog', { type: 'json' });
+    } catch {
+      // KV read failed, fall through to games.json
+    }
   }
 
-  const catalog = await env.CATALOG_KV.get('catalog', { type: 'json' });
-
-  if (!Array.isArray(catalog)) {
-    return json({ version: 1, games: [], source: 'empty' });
+  if (Array.isArray(catalog) && catalog.length > 0) {
+    return json({
+      version: 1,
+      games: catalog.map(normalizeGame),
+      source: 'catalog-kv'
+    });
   }
 
-  return json({
-    version: 1,
-    games: catalog.map(normalizeGame),
-    source: 'catalog-kv'
-  });
+  // KV is empty or unavailable — fall back to games.json
+  try {
+    const origin = new URL(request.url).origin;
+    const res = await fetch(`${origin}/games.json`);
+    if (res.ok) {
+      const fallback = await res.json();
+      if (Array.isArray(fallback) && fallback.length > 0) {
+        return json({
+          version: 1,
+          games: fallback.map(normalizeGame),
+          source: 'games-json-fallback'
+        });
+      }
+    }
+  } catch {
+    // games.json fetch failed
+  }
+
+  return json({ version: 1, games: [], source: 'empty' });
 }
