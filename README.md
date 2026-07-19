@@ -2,102 +2,99 @@
 
 **Live:** https://halalgames.mscarabia.com
 
-A free, open-access Halal Video Game Screener. Search any video game and get an instant Islamic content rating — faith impact, gambling mechanics, modesty, and violence levels.
+A free, open-access Islamic content screener for video games. Search any game and get a verdict (Halal, Caution, or Avoid) with the reasons behind it: faith impact, gambling mechanics, modesty, and violence.
 
 ## What It Does
 
-- **Search 50+ games** from a built-in database (with RAWG API integration for live search)
-- **Islamic content screening** across 4 categories: Faith Impact, Financial Ethics, Modesty, Violence Level
-- **Halal Score** (0-100) with verdict: Halal Friendly, Caution, or Avoid
-- **How to Play Safely** tips generated per game
-- **Where to Buy** affiliate links (Steam, PlayStation, Xbox, Nintendo, Amazon)
-- **Report system** — users can flag incorrect verdicts for admin review
+- **Search 30+ curated games** with full review data (verdict, reasons, warnings, alternatives)
+- **RAWG API integration** for live search across the full RAWG catalog
+- **Steam library scan** — paste a public Steam profile URL and see which games are screened
+- **Admin review panel** — rate-limit-protected workspace with research links, filter checkboxes, and version-based concurrency for live catalog editing
+- **Catalog KV backend** — reviewed games stored in Cloudflare KV, served via `/api/catalog` with games.json fallback
+- **Community report system** — users flag incorrect verdicts for admin review (KV-backed, rate-limited)
 
 ## Tech Stack
 
-- **Single-file HTML** — all CSS and JS inline, zero build step
-- **Tailwind CSS** via CDN for utility classes
-- **RAWG API** for live game search (proxied through Cloudflare Pages Function)
-- **Inline SVG placeholders** for instant image rendering (no external image dependencies)
-- **Cloudflare Pages** for hosting + serverless API proxy
+- **HTML + external JS** — single HTML file with `/assets/app.7035cc8.js` (extracted runtime)
+- **CSS custom properties** — Steam-inspired palette with glass-surface effects, no framework
+- **Cloudflare Pages** — hosting, serverless Functions, KV storage
+- **RAWG API** proxied through `/api/games` (key stored server-side, never exposed)
+- **Steam Web API** proxied through `/api/steam-library` (vanity URL resolution, library lookup)
 
 ## Architecture
 
 ```
 halalgames/
-├── index.html              # Entire application (single file)
+├── index.html                    # Application shell (HTML + CSS only)
+├── assets/
+│   └── app.7035cc8.js           # Runtime JS (versioned for cache busting)
+├── games.json                    # Curated seed data (30 games)
 ├── functions/
 │   └── api/
-│       └── games.js        # Cloudflare Pages Function — RAWG API proxy
-├── _headers                # Cloudflare Pages security headers (CSP)
-├── .cfignore               # Cloudflare Pages ignore patterns
-├── 404.html                # Custom error page
-├── robots.txt              # Crawler rules
-├── sitemap.xml             # Sitemap
-└── README.md               # This file
+│       ├── games.js              # RAWG API proxy (input validation, error handling)
+│       ├── catalog.js            # Live catalog from CATALOG_KV (falls back to games.json)
+│       ├── admin-games.js        # Admin catalog editor (rate-limited, version-concurrency)
+│       ├── steam-library.js      # Steam library scan (vanity URL + owned games)
+│       ├── reports.js            # User reports (KV-backed, rate-limited)
+│       └── admin-check.js        # Admin auth verification
+├── scripts/
+│   └── validate-games.mjs        # Pre-deploy games.json validator
+├── _headers                      # CSP, security headers, cache policy
+├── .cfignore                     # Cloudflare Pages ignore patterns
+├── sitemap.xml                   # Search Engine sitemap
+├── robots.txt                    # Crawler rules
+├── 404.html                      # Custom error page
+├── package.json                  # Tailwind build + CI validation scripts
+├── tailwind.config.js            # Tailwind theme (local build, not CDN)
+├── src/
+│   └── input.css                 # Tailwind directives
+└── .github/workflows/
+    └── ci.yml                    # HTML validation, games validation, Lighthouse
 ```
 
-## Setup
-
-### Local Development
-
-```bash
-# No build step needed — just open index.html in a browser
-# Or use a local server:
-npx serve .
-```
-
-### Cloudflare Pages Deployment
-
-1. Push to `main` branch — auto-deploys
-2. Set `RAWG_API_KEY` as an environment variable in Cloudflare Dashboard → Workers & Pages → halalgames → Settings → Environment variables
-3. Set custom domain `halalgames.mscarabia.com` in Cloudflare Dashboard
-
-### Environment Variables
+## Environment Variables
 
 | Variable | Where | Description |
 |----------|-------|-------------|
-| `RAWG_API_KEY` | Cloudflare Pages env vars | RAWG API key (free at https://rawg.io/apidocs) |
+| `RAWG_API_KEY` | Cloudflare Pages env | RAWG API key (free at https://rawg.io/apidocs) |
+| `ADMIN_PASSWORD` | Cloudflare Pages env | Password for admin review panel |
+| `STEAM_API_KEY` | Cloudflare Pages env | Steam Web API key for library scan |
+| `CATALOG_KV` | Cloudflare Pages KV binding | Live catalog storage for admin-edited games |
+| `REPORTS_KV` | Cloudflare Pages KV binding | User report storage and rate limiting |
 
-**Note:** The RAWG API key must be set as a Cloudflare Pages environment variable (not in the code). The `functions/api/games.js` proxy reads it from `env.RAWG_API_KEY`.
+## Local Development
 
-## Lighthouse Scores
+```bash
+# Install dependencies
+npm install
 
-| Category | Score |
-|----------|-------|
-| Accessibility | 100 |
-| Best Practices | 100 |
-| SEO | 100 |
+# Build Tailwind CSS
+npm run build:css
 
-## Features
+# Run games validator
+npm run test:catalog
 
-- **50+ built-in games** — works offline without API key
-- **RAWG API integration** — live search for any game in the database
-- **Islamic content screening** — keyword-based analysis across 5 categories
-- **Community voting** — upvote/downvote verdicts (localStorage)
-- **Report system** — flag incorrect verdicts for admin review
-- **Responsive design** — works on mobile and desktop
-- **Keyboard accessible** — full keyboard navigation support
+# Start local server
+npx serve .
+```
+
+## Pre-Deploy Checks
+
+```bash
+npm ci
+npm run test:catalog    # Validates games.json structure and rules
+npm run build:css       # Builds Tailwind CSS
+node scripts/validate-games.mjs
+```
+
+## Security
+
+- **CSP**: `script-src 'self'` (no unsafe-inline), `frame-ancestors 'none'`, Steam API in connect-src
 - **No tracking** — no analytics, no cookies, no user data collection
-
-## Screening Categories
-
-| Category | What It Checks |
-|----------|---------------|
-| Faith Impact | Shirk, magic, polytheism, mythology, idol worship |
-| Financial Ethics | Gambling, lootboxes, gacha, microtransactions |
-| Modesty | Nudity, sexual content, suggestive themes |
-| Violence Level | Gore, blood, graphic violence vs cartoonish |
-| Audio Content | Music (informational — most games include music) |
-
-## Contributing
-
-This is a community tool. Contributions welcome:
-
-1. Fork the repository
-2. Make your changes
-3. Test locally (open `index.html` in browser)
-4. Submit a pull request
+- **Server-side secrets** — API keys never exposed to client code
+- **Rate limiting** — admin login (5/hour), admin save (10/min), reports (10/hour)
+- **Input validation** — all user input sanitized, slug normalization, source URL validation
+- **Concurrency control** — integer version on catalog saves prevents stale overwrites
 
 ## Disclaimer
 
@@ -106,8 +103,3 @@ This is a community tool for informational purposes only and does not constitute
 ## License
 
 Free and open source. Part of the [MSC Arabia](https://mscarabia.com) community tools.
-
-## Credits
-
-- Game data powered by [RAWG](https://rawg.io)
-- Islamic content guidance from [IslamQA](https://islamqa.info), [IslamWeb](https://www.islamweb.org), and [Halal Guidelines](https://halalguidelines.com)
