@@ -131,8 +131,8 @@ button{font-family:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:6px}
 
 /* ===== ANIMATED BACKGROUND (CSS only) ===== */
-.bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.bg-grid{position:absolute;inset:-50%;
+.steam-atmosphere{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:linear-gradient(145deg,#10141b,#162536 55%,#10141b)}
+.atmosphere-grid{position:absolute;inset:-30%;opacity:.22;
   background-image:
     linear-gradient(rgba(34,211,238,.05) 1px,transparent 1px),
     linear-gradient(90deg,rgba(34,211,238,.05) 1px,transparent 1px);
@@ -359,10 +359,10 @@ dialog::backdrop{background:rgba(5,8,15,.82);backdrop-filter:blur(6px)}
 
 <div id="loader"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
-<div class="bg-layer" aria-hidden="true">
-  <div class="bg-grid"></div>
-  <div class="glow glow-1"></div><div class="glow glow-2"></div><div class="glow glow-3"></div>
-  <div class="shape shape-a"></div><div class="shape shape-b"></div><div class="shape shape-c"></div>
+<div class="steam-atmosphere" aria-hidden="true">
+  <div class="atmosphere-grid"></div>
+  <div class="atmosphere-glow glow-cyan"></div><div class="atmosphere-glow glow-violet"></div><div ></div>
+  <div ></div><div ></div><div ></div>
 </div>
 
 <header>
