@@ -524,21 +524,33 @@ const VERDICT_SHORT={halal:'Halal',caution:'Caution',haram:'Avoid'};
 /* ===== STATE ===== */
 const STATE={all:[],view:'grid',verdict:'all',genre:null,sort:'relevance',genresExpanded:false,query:''};
 let INLINE_FALLBACK=[
-  {id:1,name:'Stardew Valley',slug:'stardew-valley',genres:['Simulation','RPG'],platforms:['PC','Mobile','Console'],description:'A peaceful farming simulation.',verdict:'halal',score:92,reasons:['No polytheistic or occult themes.','No gambling or lootboxes.'],warnings:['Alcohol depicted socially in a saloon, minor and avoidable.'],stores:['Steam','Nintendo Store']},
-  {id:2,name:'Minecraft',slug:'minecraft',genres:['Sandbox','Survival'],platforms:['PC','Mobile','Console'],description:'Build, explore, and survive.',verdict:'halal',score:88,reasons:['Open-ended creative play.','No real-money gambling.'],warnings:['Light fantasy elements like potions, disableable in peaceful mode.'],stores:['Minecraft.net','Xbox Store']},
-  {id:5,name:'Grand Theft Auto V',slug:'grand-theft-auto-v',genres:['Action','Adventure'],platforms:['PC','Console'],description:'Open-world crime game.',verdict:'haram',score:9,reasons:[],warnings:['Glorifies crime and murder.','Explicit sexual content and nudity.','In-game casino gambling and extreme violence.'],alternatives:['stardew-valley','minecraft'],stores:['Steam']}
+  {id:1,name:'Stardew Valley',slug:'stardew-valley',genres:['Simulation','RPG'],platforms:['PC','Mobile','Console'],description:'A peaceful farming simulation.',verdict:'halal',score:92,screeningStatus:'community-reviewed',reasons:['No polytheistic or occult themes.','No gambling or lootboxes.'],warnings:['Alcohol depicted socially in a saloon, minor and avoidable.'],stores:['Steam','Nintendo Store']},
+  {id:2,name:'Minecraft',slug:'minecraft',genres:['Sandbox','Survival'],platforms:['PC','Mobile','Console'],description:'Build, explore, and survive.',verdict:'halal',score:88,screeningStatus:'community-reviewed',reasons:['Open-ended creative play.','No real-money gambling.'],warnings:['Light fantasy elements like potions, disableable in peaceful mode.'],stores:['Minecraft.net','Xbox Store']},
+  {id:5,name:'Grand Theft Auto V',slug:'grand-theft-auto-v',genres:['Action','Adventure'],platforms:['PC','Console'],description:'Open-world crime game.',verdict:'haram',score:9,screeningStatus:'community-reviewed',reasons:[],warnings:['Glorifies crime and murder.','Explicit sexual content and nudity.','In-game casino gambling and extreme violence.'],alternatives:['stardew-valley','minecraft'],stores:[]}
 ];
 
 /* ===== RENDER ===== */
 function verdictOf(g){g._s=g._s||screen(g);return g._s;}
+function renderTags(g){
+  const genres=(g.genres||[]).map(x=>`<span class="tag tag-genre">${esc(x)}</span>`).join('');
+  const platforms=(g.platforms||[]).map(x=>`<span class="tag tag-platform">${esc(x)}</span>`).join('');
+  return `<div class="game-tags">${genres}${platforms}</div>`;
+}
+function canLinkStore(g){
+  return g.verdict==='halal'&&(g.screeningStatus||'unreviewed')==='community-reviewed'&&Array.isArray(g.stores)&&g.stores.length>0;
+}
+function renderStoreLinks(g){
+  if(!canLinkStore(g))return`<span class="store-note">Store links hidden until reviewed.</span>`;
+  return`<div class="stores">${g.stores.map(st=>`<a class="store-link" href="${esc(storeUrl(st,g.name))}" target="_blank" rel="noopener noreferrer sponsored">${esc(st)}</a>`).join('')}</div>`;
+}
 function cardHTML(g){
   const s=verdictOf(g);
-  const meta=[...(g.genres||[]).slice(0,2),...(g.platforms||[]).slice(0,2)].join(' \u00b7 ');
-  const why=s.reasons[0]||s.warnings[0]||'';
-  return `<button class="gcard v-${s.verdict}" data-slug="${esc(g.slug)}">
-    <span class="badge ${s.verdict}">${VERDICT_SHORT[s.verdict]}</span>
+  const status=g.screeningStatus||'unreviewed';
+  const why=s.reasons[0]||s.warnings[0]||'Awaiting content review.';
+  return`<button class="gcard v-${s.verdict} status-${status}" data-slug="${esc(g.slug)}">
+    <span class="badge ${s.verdict}">${s.verdict==='halal'?'Screened':s.verdict==='caution'?'Caution':s.verdict==='haram'?'Avoid':'Unreviewed'}</span>
     <div class="gname">${esc(g.name)}</div>
-    <div class="gmeta">${esc(meta)}</div>
+    ${renderTags(g)}
     <div class="why-line">${esc(why)}</div>
     <div class="right"><div class="scorebar"><div class="track"><div class="fill ${s.verdict}" style="width:${s.score}%"></div></div><div class="score-num">${s.score}<small>/100</small></div></div></div>
   </button>`;
@@ -564,8 +576,7 @@ function applyFilters(){
     return;
   }
   box.innerHTML=set.map(cardHTML).join('');
-  $('#result-meta').textContent=`${set.length} game${set.length===1?'':'s'}${STATE.query?` matching "${STATE.query}"`:''}`;
-  // mood = dominant verdict
+  $('#result-meta').textContent=`${set.length} game${set.length===1?'':'}${STATE.query?` matching "${STATE.query}"`:''}`;
   const tally={halal:0,caution:0,haram:0};set.forEach(g=>tally[verdictOf(g).verdict]++);
   const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);
   document.body.setAttribute('data-mood',mood);
@@ -602,7 +613,7 @@ function storeUrl(store,name){
   const map={'Steam':'https://store.steampowered.com/search/?term=','Epic Games':'https://store.epicgames.com/en-US/browse?q=','GOG':'https://www.gog.com/en/games?query=','Nintendo Store':'https://www.nintendo.com/us/search/?q=','PlayStation Store':'https://store.playstation.com/en-us/search/','Xbox Store':'https://www.xbox.com/en-US/Search/Results?q=','Battle.net':'https://us.shop.battle.net/en-us','Minecraft.net':'https://www.minecraft.net/'};
   const base=map[store];
   if(base)return base+encodeURIComponent(name);
-  return 'https://www.google.com/search?q='+encodeURIComponent(name+' '+store+' buy');// Google fallback
+  return 'https://www.google.com/search?q='+encodeURIComponent(name+' '+store+' buy');
 }
 function openDetail(slug){
   const g=STATE.all.find(x=>x.slug===slug);if(!g)return;
@@ -611,7 +622,7 @@ function openDetail(slug){
   const whyItems=(s.verdict==='halal'?s.reasons:s.reasons.concat([])).map(r=>`<li><span class="mk ${s.verdict==='halal'?'good':s.verdict==='caution'?'warn':'bad'}">${s.verdict==='halal'?'\u2713':'\u2022'}</span><span>${esc(r)}</span></li>`).join('')||'<li><span class="mk good">\u2713</span><span>No notable concerns recorded.</span></li>';
   const warnItems=(s.warnings||[]).map(w=>`<li><span class="mk warn">\u26a0</span><span>${esc(w)}</span></li>`).join('');
   const alts=(g.alternatives||[]).map(a=>{const t=STATE.all.find(x=>x.slug===a);return t?`<button class="alt-chip" data-slug="${esc(t.slug)}">${esc(t.name)}</button>`:'';}).join('');
-  const stores=(g.stores||[]).map(st=>`<a class="store-link" href="${storeUrl(st,g.name)}" target="_blank" rel="noopener noreferrer">${esc(st)}</a>`).join('')||`<a class="store-link" href="https://www.google.com/search?q=${encodeURIComponent(g.name+' buy')}" target="_blank" rel="noopener noreferrer">Search where to buy</a>`;
+  const stores=renderStoreLinks(g);
   const meta=[...(g.genres||[]),...(g.platforms||[])].join(' \u00b7 ');
   dlg.innerHTML=`<div class="modal">
     <button class="x" data-close aria-label="Close">&#10005;</button>
@@ -620,15 +631,15 @@ function openDetail(slug){
       <div><h3 class="m-title">${esc(g.name)}</h3><div class="m-sub">${esc(meta)}</div></div>
     </div>
     <div class="m-verdict ${s.verdict}">
-      <span class="vlabel">${VERDICT_LABEL[s.verdict]}</span>
+      <span class="vlabel">${VERDICT_LABEL[s.verdict]||'Unreviewed'}</span>
       <span class="ring">${s.score}<small>/100</small></span>
     </div>
     <div class="m-block"><h4>Why this verdict</h4><ul>${whyItems}</ul></div>
     ${warnItems?`<div class="m-block"><h4>What to watch for</h4><ul>${warnItems}</ul></div>`:''}
     ${alts&&s.verdict!=='halal'?`<div class="m-block"><h4>Safer alternatives in this genre</h4><div class="alts">${alts}</div></div>`:''}
-    <div class="m-block"><h4>Where to buy</h4><div class="stores">${stores}</div></div>
+    <div class="m-block"><h4>Where to buy</h4>${stores}</div>
     <div class="m-foot">
-      <span class="m-sub">${s.curated?'Community curated':'Auto-screened'}</span>
+      <span class="m-sub">${g.screeningStatus==='community-reviewed'?'Community curated':'Auto-screened'}</span>
       <button class="report-btn" data-report="${esc(g.slug)}">Report this verdict</button>
     </div>
   </div>`;
@@ -647,17 +658,16 @@ function normalizeApi(results){
     description:r.description_raw||r.description||'',
     tags:(r.tags||[]).map(t=>t.name||t),
     esrb:(r.esrb_rating&&r.esrb_rating.name)||'',
-    stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean)
+    stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean),
+    screeningStatus:'unreviewed'
   }));
 }
 async function runSearch(q){
   STATE.query=q.trim();
   if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}
-  // local matches first
   const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));
   const cached=cacheGet(STATE.query.toLowerCase());
   if(cached){mergeResults(local,cached);return;}
-  // skeletons
   $('#results').className='grid';
   $('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');
   try{
@@ -677,6 +687,11 @@ function mergeResults(local,api){
   const merged=local.concat(api.filter(g=>!seen.has(g.slug)));
   STATE.all=merged;applyFilters();
 }
+
+/* ===== VOTING ===== */
+function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
+function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
+function voteGame(gid,dir){const v=getVotes(),k=''+gid;if(!v[k])v[k]={up:0,dn:0,mv:0};const x=v[k];if(x.mv===dir){x[dir>0?'up':'dn']--;x.mv=0}else{if(x.mv!==0)x[x.mv>0?'up':'dn']--;x[dir>0?'up':'dn']++;x.mv=dir}setVotes(v);document.querySelectorAll('[data-game-id="'+gid+'"]').forEach(el=>{const u=el.querySelector('.vu'),d=el.querySelector('.vd');if(u){u.textContent='\u25B2 '+(v[k].up||0);u.className='vote-btn vu'+(v[k].mv===1?' voted-up':'')}if(d){d.textContent='\u25BC '+(v[k].dn||0);d.className='vote-btn vd'+(v[k].mv===-1?' voted-down':'')}})}
 
 /* ===== INIT ===== */
 async function loadSeed(){
@@ -733,7 +748,7 @@ $('#overlay').addEventListener('click',()=>openDrawer(false));
 $$('.drawer nav button').forEach(b=>b.addEventListener('click',()=>{openDrawer(false);const el=document.getElementById(b.dataset.scroll);if(el)el.scrollIntoView({behavior:'smooth'});}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')openDrawer(false);});
 
-/* admin panel trigger (?admin=1) uses existing admin-check.js */
+/* admin panel trigger (?admin=1) */
 if(new URLSearchParams(location.search).get('admin')==='1'){
   fetch('/api/reports',{headers:{'X-Admin-Request':'1'}}).then(r=>{
     if(r.status===403)showToast('Admin access requires a valid token.');
@@ -741,12 +756,12 @@ if(new URLSearchParams(location.search).get('admin')==='1'){
   }).catch(()=>{});
 }
 
-
-/* ===== VOTING ===== */
-function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
-function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
-function voteGame(gid,dir){const v=getVotes(),k=''+gid;if(!v[k])v[k]={up:0,dn:0,mv:0};const x=v[k];if(x.mv===dir){x[dir>0?'up':'dn']--;x.mv=0}else{if(x.mv!==0)x[x.mv>0?'up':'dn']--;x[dir>0?'up':'dn']++;x.mv=dir}setVotes(v);document.querySelectorAll('[data-game-id="'+gid+'"]').forEach(el=>{const u=el.querySelector('.vu'),d=el.querySelector('.vd');if(u){u.textContent='\u25B2 '+(v[k].up||0);u.className='vote-btn vu'+(v[k].mv===1?' voted-up':'')}if(d){d.textContent='\u25BC '+(v[k].dn||0);d.className='vote-btn vd'+(v[k].mv===-1?' voted-down':'')}})}
 init();
 </script>
+</body>
+</html>
+
+</script>
+
 </body>
 </html>
