@@ -571,7 +571,7 @@ function esc(s){return s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 function placeholderImage(name){const i=String(name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();return i||'?';}
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let toastT;
-function showToast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(toToast);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
+function showToast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
 const CACHE_MAX=50,cache=new Map();
 function cacheGet(k){if(!cache.has(k))return null;const v=cache.get(k);cache.delete(k);cache.set(k,v);return v;}
 function cacheSet(k,v){if(cache.has(k))cache.delete(k);cache.set(k,v);if(cache.size>CACHE_MAX)cache.delete(cache.keys().next().value);}
