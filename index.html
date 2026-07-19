@@ -1,63 +1,6 @@
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-<style>
-.vote-row{display:flex;gap:6px;align-items:center;margin-top:var(--sp-2)}
-    .vote-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:.7rem;padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .2s var(--ease)}
-    .vote-btn:hover{border-color:var(--border-lit);color:var(--text)}
-    .vote-btn.voted-up{border-color:var(--halal);color:var(--halal);background:rgba(52,211,153,.1)}
-    .vote-btn.voted-down{border-color:var(--haram);color:var(--haram);background:rgba(248,113,113,.1)}
-    .report-trigger{background:none;border:none;color:var(--muted);font-size:.7rem;cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .2s}
-    .report-trigger:hover{color:var(--haram)}
-      
-    .glass-surface{background:rgba(27,40,56,.65);backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%);border:1px solid rgba(48,70,92,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 32px rgba(0,0,0,.25)}
-    @media(prefers-reduced-transparency:reduce){.glass-surface{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--surface)}}
-    .card-meta,.card-footer,.game-tags{display:flex;align-items:center;gap:8px}
-    .card-meta{color:var(--muted);font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-    .status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
-    .status-halal .status-dot{background:var(--halal);box-shadow:0 0 10px var(--halal)}
-    .status-caution .status-dot{background:var(--caution)}
-    .status-haram .status-dot{background:var(--haram)}
-    .score{margin-left:auto;color:var(--heading);font-variant-numeric:tabular-nums}
-    .game-card h3{margin:18px 0 12px;font:700 1.3rem/1.15 'Space Grotesk',sans-serif;color:var(--heading)}
-    .game-tags{flex-wrap:wrap;margin-bottom:16px}
-    .tag{min-height:26px;padding:4px 9px;border-radius:999px;font-size:.7rem;font-weight:700;line-height:1}
-    .tag-genre{color:var(--cyan);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.35)}
-    .tag-platform{color:var(--muted);background:var(--surface);border:1px solid var(--border)}
-    .game-card p{display:-webkit-box;overflow:hidden;margin:0;color:var(--muted);font-size:.84rem;line-height:1.55;-webkit-box-orient:vertical;-webkit-line-clamp:3}
-    .card-footer{justify-content:space-between;flex-wrap:wrap;margin-top:auto;padding-top:18px}
-    .details-button,.store-link{padding:9px 12px;border-radius:10px;font-size:.76rem;font-weight:700;text-decoration:none}
-    .details-button{color:var(--text);background:var(--surface);border:1px solid var(--border);cursor:pointer}
-    .store-link{color:var(--bg);background:var(--halal)}
-    .store-locked{color:var(--muted);font-size:.7rem}
-    
-  
-    .admin-modal{width:min(980px,96vw);max-height:92vh;overflow:auto;padding:28px;border-radius:24px}
-    .admin-toolbar,.review-row-head,.admin-filters,.review-fields{display:flex;gap:14px}
-    .admin-toolbar,.review-row-head{align-items:flex-start;justify-content:space-between}
-    .admin-filters{position:sticky;top:0;z-index:2;padding:14px 0;background:rgba(16,20,27,.84);backdrop-filter:blur(14px)}
-    .admin-filters input,.admin-filters select,.review-fields select,.review-fields input,.review-wide-field textarea,#admin-login-form input{width:100%;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);padding:10px 12px}
-    .review-row{margin:14px 0;padding:20px;border:1px solid var(--border);border-radius:18px;background:rgba(27,40,56,.82)}
-    .review-row h3{margin-bottom:8px}
-    .review-tags,.research-links,.review-checks{display:flex;flex-wrap:wrap;gap:7px}
-    .research-links{margin:14px 0}
-    .research-links a,.research-primary{border:1px solid var(--border);border-radius:999px;color:var(--cyan);padding:6px 10px;font-size:.72rem;text-decoration:none}
-    .research-primary{border-radius:9px;padding:9px 12px}
-    .review-fields{align-items:end;margin:16px 0}
-    .review-fields label,.review-wide-field,#admin-login-form{display:grid;gap:6px;color:var(--muted);font-size:.75rem}
-    .review-fields label{flex:1}
-    .review-checks{margin:14px 0}
-    .review-check{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:999px;color:var(--text);padding:8px 10px;font-size:.75rem}
-    .review-wide-field{margin-top:14px}
-    .review-wide-field textarea{min-height:76px;resize:vertical}
-    .admin-status{min-height:24px;color:var(--cyan);font-size:.8rem}
-    .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:8px}
-    .modal-close:hover{color:var(--text)}
-    @media(max-width:680px){.admin-modal{padding:18px}.admin-toolbar,.review-row-head,.admin-filters,.review-fields{align-items:stretch;flex-direction:column}.admin-filters{position:static}}
-  </style>
-<dialog id="admin-dialog"><div class="admin-modal glass-surface"><button class="modal-close" id="close-admin" type="button" aria-label="Close">&#10005;</button><div id="admin-login"><p class="eyebrow" style="color:var(--cyan);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Private workspace</p><h2 style="color:var(--heading);margin:8px 0">Review uncertain games</h2><p style="color:var(--muted);margin-bottom:16px">Search each title, inspect the sources, then save your verdict.</p><form id="admin-login-form"><label for="admin-password" style="color:var(--muted);font-size:.75rem;display:block;margin-bottom:4px">Admin password</label><input id="admin-password" type="password" required style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:9px;margin-bottom:12px"><button type="submit" style="background:var(--cyan);color:var(--bg);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;width:100%">Unlock review queue</button></form></div><div id="admin-workspace" hidden><div class="admin-toolbar"><div><p class="eyebrow" style="color:var(--cyan);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Review queue</p><h2 style="color:var(--heading)">Unreviewed games</h2><p id="admin-count" class="muted"></p></div><button id="save-catalog" style="background:var(--cyan);color:var(--bg);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer">Save changes</button></div><div class="admin-filters"><input id="admin-search" type="search" placeholder="Filter review queue..." aria-label="Filter review queue"><select id="admin-verdict-filter" aria-label="Filter by verdict"><option value="unreviewed">Unreviewed only</option><option value="all">All games</option><option value="halal">Halal</option><option value="caution">Caution</option><option value="haram">Avoid</option></select></div><div id="admin-game-list"></div><p id="admin-status" class="admin-status" aria-live="polite"></p></div></div></dialog>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HalalGames Guide: Islamic Content Ratings for Games</title>
@@ -363,10 +306,77 @@ dialog::backdrop{background:rgba(5,8,15,.82);backdrop-filter:blur(6px)}
     .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:8px}
     .modal-close:hover{color:var(--text)}
     @media(max-width:680px){.admin-modal{padding:18px}.admin-toolbar,.review-row-head,.admin-filters,.review-fields{align-items:stretch;flex-direction:column}.admin-filters{position:static}}
-  </style>
+
+/* ===== GLASS SURFACE ===== */
+.glass-surface{background:rgba(27,40,56,.65);backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%);border:1px solid rgba(48,70,92,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 32px rgba(0,0,0,.25)}
+@media(prefers-reduced-transparency:reduce){.glass-surface{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--surface)}}
+
+/* ===== CARD META & TAGS ===== */
+.card-meta,.card-footer,.game-tags{display:flex;align-items:center;gap:8px}
+.card-meta{color:var(--muted);font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.status-halal .status-dot{background:var(--halal);box-shadow:0 0 10px var(--halal)}
+.status-caution .status-dot{background:var(--caution)}
+.status-haram .status-dot{background:var(--haram)}
+.game-card{display:flex;flex-direction:column;min-height:250px;padding:20px;background:var(--card);border:1px solid var(--border);border-radius:18px;transition:transform .18s var(--ease),border-color .18s var(--ease)}
+.game-card:hover{transform:translateY(-4px);border-color:var(--border-lit)}
+.game-card.status-community-reviewed{border-color:color-mix(in srgb,var(--halal) 30%,var(--border))}
+.game-card.status-unreviewed{border-color:var(--border)}
+.game-card h3{margin:18px 0 12px;font:700 1.3rem/1.15 'Space Grotesk',sans-serif;color:var(--heading)}
+.game-card p{display:-webkit-box;overflow:hidden;margin:0;color:var(--muted);font-size:.84rem;line-height:1.55;-webkit-box-orient:vertical;-webkit-line-clamp:3}
+.game-tags{flex-wrap:wrap;margin-bottom:16px}
+.tag{min-height:26px;padding:4px 9px;border-radius:999px;font-size:.7rem;font-weight:700;line-height:1}
+.tag-genre{color:var(--cyan);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.35)}
+.tag-platform{color:var(--muted);background:var(--surface);border:1px solid var(--border)}
+.card-footer{justify-content:space-between;flex-wrap:wrap;margin-top:auto;padding-top:18px}
+.details-button{padding:9px 12px;border-radius:10px;font-size:.76rem;font-weight:700;color:var(--text);background:var(--surface);border:1px solid var(--border);cursor:pointer}
+.store-locked{color:var(--muted);font-size:.7rem}
+.score{margin-left:auto;color:var(--heading);font-variant-numeric:tabular-nums}
+.store-link{padding:9px 12px;border-radius:10px;font-size:.76rem;font-weight:700;text-decoration:none;color:var(--bg);background:var(--halal)}
+
+/* ===== VOTE BUTTONS ===== */
+.vote-row{display:flex;gap:6px;align-items:center;margin-top:var(--sp-2)}
+.vote-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:.7rem;padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .2s var(--ease)}
+.vote-btn:hover{border-color:var(--border-lit);color:var(--text)}
+.vote-btn.voted-up{border-color:var(--halal);color:var(--halal);background:rgba(52,211,153,.1)}
+.vote-btn.voted-down{border-color:var(--haram);color:var(--haram);background:rgba(248,113,113,.1)}
+.report-trigger{background:none;border:none;color:var(--muted);font-size:.7rem;cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .2s}
+.report-trigger:hover{color:var(--haram)}
+
+/* ===== ADMIN REVIEW ===== */
+.admin-modal{width:min(980px,96vw);max-height:92vh;overflow:auto;padding:28px;border-radius:24px}
+.admin-toolbar,.review-row-head,.admin-filters,.review-fields{display:flex;gap:14px}
+.admin-toolbar,.review-row-head{align-items:flex-start;justify-content:space-between}
+.admin-filters{position:sticky;top:0;z-index:2;padding:14px 0;background:rgba(16,20,27,.84);backdrop-filter:blur(14px)}
+.admin-filters input,.admin-filters select,.review-fields select,.review-fields input,.review-wide-field textarea,#admin-login-form input{width:100%;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);padding:10px 12px}
+.review-row{margin:14px 0;padding:20px;border:1px solid var(--border);border-radius:18px;background:rgba(27,40,56,.82)}
+.review-row h3{margin-bottom:8px}
+.review-tags,.research-links,.review-checks{display:flex;flex-wrap:wrap;gap:7px}
+.research-links{margin:14px 0}
+.research-links a,.research-primary{border:1px solid var(--border);border-radius:999px;color:var(--cyan);padding:6px 10px;font-size:.72rem;text-decoration:none}
+.research-primary{border-radius:9px;padding:9px 12px}
+.review-fields{align-items:end;margin:16px 0}
+.review-fields label,.review-wide-field,#admin-login-form{display:grid;gap:6px;color:var(--muted);font-size:.75rem}
+.review-fields label{flex:1}
+.review-checks{margin:14px 0}
+.review-check{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:999px;color:var(--text);padding:8px 10px;font-size:.75rem}
+.review-wide-field{margin-top:14px}
+.review-wide-field textarea{min-height:76px;resize:vertical}
+.admin-status{min-height:24px;color:var(--cyan);font-size:.8rem}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:8px}
+.modal-close:hover{color:var(--text)}
+@media(max-width:680px){.admin-modal{padding:18px}.admin-toolbar,.review-row-head,.admin-filters,.review-fields{align-items:stretch;flex-direction:column}.admin-filters{position:static}}
+
+/* ===== STEAM PANEL ===== */
+.steam-summary{display:flex;gap:16px;margin-bottom:24px;padding:16px;background:var(--surface);border-radius:12px}
+.steam-summary div{display:flex;flex-direction:column;align-items:center}
+.steam-summary strong{font-size:1.5rem;color:var(--text)}
+.steam-summary span{font-size:.75rem;color:var(--muted)}
+.unreviewed-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.unreviewed-row span:last-child{color:var(--muted);font-size:.78rem}
+</style>
 </head>
 <body>
-
 <div id="loader"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
 <div class="steam-atmosphere" aria-hidden="true">
@@ -465,7 +475,7 @@ dialog::backdrop{background:rgba(5,8,15,.82);backdrop-filter:blur(6px)}
     <button data-scroll="contact">Contact</button>
   <button class="menu-link" type="button" id="open-admin">Admin review</button>
         </nav>
-</aside>
+</aside>`n`n<dialog id="admin-dialog"><div class="admin-modal glass-surface"><button class="modal-close" id="close-admin" type="button" aria-label="Close">&#10005;</button><div id="admin-login"><p class="eyebrow" style="color:var(--cyan);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Private workspace</p><h2 style="color:var(--heading);margin:8px 0">Review uncertain games</h2><p style="color:var(--muted);margin-bottom:16px">Search each title, inspect the sources, then save your verdict.</p><form id="admin-login-form"><label for="admin-password" style="color:var(--muted);font-size:.75rem;display:block;margin-bottom:4px">Admin password</label><input id="admin-password" type="password" required style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:9px;margin-bottom:12px"><button type="submit" style="background:var(--cyan);color:var(--bg);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;width:100%">Unlock review queue</button></form></div><div id="admin-workspace" hidden><div class="admin-toolbar"><div><p class="eyebrow" style="color:var(--cyan);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Review queue</p><h2 style="color:var(--heading)">Unreviewed games</h2><p id="admin-count" class="muted"></p></div><button id="save-catalog" style="background:var(--cyan);color:var(--bg);border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer">Save changes</button></div><div class="admin-filters"><input id="admin-search" type="search" placeholder="Filter review queue..." aria-label="Filter review queue"><select id="admin-verdict-filter" aria-label="Filter by verdict"><option value="unreviewed">Unreviewed only</option><option value="all">All games</option><option value="halal">Halal</option><option value="caution">Caution</option><option value="haram">Avoid</option></select></div><div id="admin-game-list"></div><p id="admin-status" class="admin-status" aria-live="polite"></p></div></div></dialog>
 
 <dialog id="detail"></dialog>
 <dialog id="report">
@@ -489,5 +499,7 @@ dialog::backdrop{background:rgba(5,8,15,.82);backdrop-filter:blur(6px)}
 
 
 
+</body>
+</html>
 </body>
 </html>
