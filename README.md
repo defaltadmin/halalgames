@@ -62,30 +62,16 @@ halalgames/
 | `CATALOG_KV` | Cloudflare Pages KV binding | Live catalog storage for admin-edited games |
 | `REPORTS_KV` | Cloudflare Pages KV binding | User report storage and rate limiting |
 
-## Local Development
+## Development
 
 ```bash
-# Install dependencies
-npm install
-
-# Build Tailwind CSS
-npm run build:css
-
-# Run games validator
-npm run test:catalog
-
-# Start local server
-npx serve .
+npm ci                    # Install dependencies
+npm run build:css         # Build Tailwind CSS (local build, not CDN)
+npm run test:catalog      # Validate games.json structure and rules
+npx serve .               # Start local server
 ```
 
-## Pre-Deploy Checks
-
-```bash
-npm ci
-npm run test:catalog    # Validates games.json structure and rules
-npm run build:css       # Builds Tailwind CSS
-node scripts/validate-games.mjs
-```
+Tailwind is built locally (`tailwindcss -i ./src/input.css -o ./tailwind.css --minify`). The CDN script tag was removed — `tailwind.css` is included via `_headers` cache rules. The bulk of the CSS is hand-written custom properties, not Tailwind utilities.
 
 ## Security
 
