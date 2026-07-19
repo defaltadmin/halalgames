@@ -36,16 +36,12 @@ function normalizeGame(game) {
   };
 }
 
-export async function onRequestGet({ env, request }) {
-  let catalog = null;
+const FALLBACK_URL = 'https://halalgames.mscarabia.com/games.json';
 
-  if (env.CATALOG_KV) {
-    try {
-      catalog = await env.CATALOG_KV.get('catalog', { type: 'json' });
-    } catch {
-      // KV read failed, fall through to games.json
-    }
-  }
+export async function onRequestGet({ env }) {
+  const catalog = env.CATALOG_KV
+    ? await env.CATALOG_KV.get('catalog', { type: 'json' }).catch(() => null)
+    : null;
 
   if (Array.isArray(catalog) && catalog.length > 0) {
     return json({
@@ -55,23 +51,20 @@ export async function onRequestGet({ env, request }) {
     });
   }
 
-  // KV is empty or unavailable — fall back to games.json
+  // KV empty or unavailable — fall back to games.json
   try {
-    const origin = new URL(request.url).origin;
-    const res = await fetch(`${origin}/games.json`);
-    if (res.ok) {
-      const fallback = await res.json();
-      if (Array.isArray(fallback) && fallback.length > 0) {
-        return json({
-          version: 1,
-          games: fallback.map(normalizeGame),
-          source: 'games-json-fallback'
-        });
-      }
+    const fallback = await fetch(FALLBACK_URL);
+    if (fallback.ok) {
+      const games = await fallback.json();
+      return json({
+        version: 1,
+        games: Array.isArray(games) ? games.map(normalizeGame) : [],
+        source: 'games-json'
+      });
     }
   } catch {
-    // games.json fetch failed
+    // fetch failed
   }
 
-  return json({ version: 1, games: [], source: 'empty' });
+  return json({ version: 1, games: [], source: 'empty' }, 200);
 }

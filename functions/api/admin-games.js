@@ -12,17 +12,14 @@ function isAdmin(request, env) {
   return Boolean(env.ADMIN_PASSWORD && supplied === env.ADMIN_PASSWORD);
 }
 
-// Rate limiting: max 5 admin logins per IP per 10 minutes
-const LOGIN_WINDOW = 600; // seconds
-const LOGIN_MAX = 5;
-const SAVE_WINDOW = 60;
-const SAVE_MAX = 10;
-
-async function checkRateLimit(env, key, max, windowSec) {
-  if (!env.CATALOG_KV) return true; // no KV, skip rate limiting
-  const count = Number(await env.CATALOG_KV.get(`ratelimit:${key}`) || 0);
-  if (count >= max) return false;
-  await env.CATALOG_KV.put(`ratelimit:${key}`, String(count + 1), { expirationTtl: windowSec });
+async function allowAttempt(request, env, prefix, limit, ttl) {
+  if (!env.REPORTS_KV) return true;
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const hour = new Date().toISOString().slice(0, 13);
+  const key = `${prefix}:${ip}:${hour}`;
+  const count = Number(await env.REPORTS_KV.get(key) || 0);
+  if (count >= limit) return false;
+  await env.REPORTS_KV.put(key, String(count + 1), { expirationTtl: ttl });
   return true;
 }
 
@@ -31,11 +28,7 @@ function cleanText(value, max = 1200) {
 }
 
 function cleanSlug(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 120);
+  return String(value || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, '').slice(0, 120);
 }
 
 function cleanSource(src) {
@@ -45,26 +38,18 @@ function cleanSource(src) {
   const url = String(src.url || '').trim();
   if (!url || url.length > 500) return null;
   try { new URL(url); } catch { return null; }
-  return {
-    type,
-    url,
-    checkedAt: String(src.checkedAt || '').slice(0, 10)
-  };
+  return { type, url, checkedAt: String(src.checkedAt || '').slice(0, 10) };
 }
 
 function cleanFilter(value, type) {
-  if (type === 'string') {
-    return ['unknown', 'present', 'absent', 'mixed'].includes(value) ? value : 'unknown';
-  }
+  if (type === 'string') return ['unknown', 'present', 'absent', 'mixed'].includes(value) ? value : 'unknown';
   return value === true || value === false ? value : null;
 }
 
 function cleanGame(input) {
   const slug = cleanSlug(input.slug);
-  const verdict = ['halal', 'caution', 'haram', 'unreviewed'].includes(input.verdict)
-    ? input.verdict : 'unreviewed';
-  const reviewConfidence = ['high', 'medium', 'low', 'none'].includes(input.reviewConfidence)
-    ? input.reviewConfidence : 'none';
+  const verdict = ['halal', 'caution', 'haram', 'unreviewed'].includes(input.verdict) ? input.verdict : 'unreviewed';
+  const reviewConfidence = ['high', 'medium', 'low', 'none'].includes(input.reviewConfidence) ? input.reviewConfidence : 'none';
   const scoreVal = Number(input.score);
   const score = Number.isFinite(scoreVal) ? Math.max(0, Math.min(100, Math.round(scoreVal))) : null;
 
@@ -75,7 +60,6 @@ function cleanGame(input) {
     genres: Array.isArray(input.genres) ? input.genres.map(x => cleanText(x, 60)).slice(0, 8) : [],
     platforms: Array.isArray(input.platforms) ? input.platforms.map(x => cleanText(x, 60)).slice(0, 8) : [],
     description: cleanText(input.description, 2000),
-    steamAppId: Number.isFinite(Number(input.steamAppId)) ? Number(input.steamAppId) : undefined,
     verdict,
     screeningStatus: verdict === 'unreviewed' ? 'unreviewed' : 'community-reviewed',
     reviewConfidence: verdict === 'unreviewed' ? 'none' : reviewConfidence,
@@ -98,9 +82,6 @@ function cleanGame(input) {
     adminNote: cleanText(input.adminNote, 2000)
   };
 
-  // Remove undefined fields
-  if (game.steamAppId === undefined) delete game.steamAppId;
-
   return game;
 }
 
@@ -113,15 +94,18 @@ export async function onRequest({ request, env }) {
     return json({ error: 'Catalog KV is not configured.' }, 503);
   }
 
-  // Rate limit: 5 logins per 10 min
-  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-  if (!(await checkRateLimit(env, `admin:${ip}`, LOGIN_MAX, LOGIN_WINDOW))) {
-    return json({ error: 'Too many requests. Try again in 10 minutes.' }, 429);
+  // Rate limit: 5 attempts per hour
+  if (!(await allowAttempt(request, env, 'admin-login', 5, 3600))) {
+    return json({ error: 'Too many attempts. Try again later.' }, 429);
   }
 
   if (request.method === 'GET') {
-    const catalog = await env.CATALOG_KV.get('catalog', { type: 'json' });
-    return json({ games: Array.isArray(catalog) ? catalog : [] });
+    const stored = await env.CATALOG_KV.get('catalog', { type: 'json' });
+    const version = Number(await env.CATALOG_KV.get('catalog_version') || 0);
+    return json({
+      games: Array.isArray(stored) ? stored : [],
+      version
+    });
   }
 
   if (request.method !== 'PUT') {
@@ -129,18 +113,15 @@ export async function onRequest({ request, env }) {
   }
 
   // Rate limit: 10 saves per minute
-  if (!(await checkRateLimit(env, `save:${ip}`, SAVE_MAX, SAVE_WINDOW))) {
-    return json({ error: 'Too many saves. Try again in 1 minute.' }, 429);
+  if (!(await allowAttempt(request, env, 'admin-save', 10, 60))) {
+    return json({ error: 'Too many saves. Try again in a minute.' }, 429);
   }
 
-  // Content-length safety — use streaming read, not header
+  // Read body via streaming (safe even if content-length is missing or wrong)
   let body;
   try {
-    const cloned = request.clone();
-    const text = await cloned.text();
-    if (text.length > 750000) {
-      return json({ error: 'Catalog payload is too large.' }, 413);
-    }
+    const text = await request.clone().text();
+    if (text.length > 750000) return json({ error: 'Payload too large.' }, 413);
     body = JSON.parse(text);
   } catch {
     return json({ error: 'Invalid JSON body.' }, 400);
@@ -154,10 +135,18 @@ export async function onRequest({ request, env }) {
     return json({ error: 'Catalog limit exceeded (max 5000).' }, 413);
   }
 
-  // Concurrency: read current version, reject if stale
-  const currentVersion = await env.CATALOG_KV.get('catalog:version');
-  if (body._version && currentVersion && body._version !== currentVersion) {
-    return json({ error: 'Catalog was modified since you loaded it. Reload and try again.' }, 409);
+  // Concurrency: version must match
+  const incomingVersion = Number(body.version);
+  if (!Number.isInteger(incomingVersion)) {
+    return json({ error: 'Missing catalog version.' }, 400);
+  }
+
+  const currentVersion = Number(await env.CATALOG_KV.get('catalog_version') || 0);
+  if (incomingVersion !== currentVersion) {
+    return json({
+      error: 'Catalog changed in another session. Reload before saving.',
+      version: currentVersion
+    }, 409);
   }
 
   const seen = new Set();
@@ -170,14 +159,14 @@ export async function onRequest({ request, env }) {
     catalog.push(game);
   }
 
-  const newVersion = Date.now().toString(36);
+  const nextVersion = currentVersion + 1;
   await env.CATALOG_KV.put('catalog', JSON.stringify(catalog));
-  await env.CATALOG_KV.put('catalog:version', newVersion);
+  await env.CATALOG_KV.put('catalog_version', String(nextVersion));
 
   return json({
     ok: true,
     count: catalog.length,
-    _version: newVersion,
+    version: nextVersion,
     savedAt: new Date().toISOString()
   });
 }
