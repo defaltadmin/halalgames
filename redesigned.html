@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- skill:chrome -->
+<style>
+/* Credit line — bottom-right */
+.design-ui-credit {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  font: 11px/1 system-ui, sans-serif;
+  color: rgba(128,128,128,0.5);
+  pointer-events: none;
+  z-index: 2147483647;
+  transition: opacity 0.4s ease;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+
+/* Hide chrome on touch devices */
+@media (hover: none) {
+  .design-ui-credit { display: none; }
+}
+
+/* Print fixes */
+@media print {
+  * {
+    transition: none !important;
+    animation: none !important;
+    box-shadow: none !important;
+  }
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .design-ui-credit { display: none !important; }
+}
+
+</style>
+<script>
+(function () {
+    // Design-ui pages are single compositions, so the whole body is editable.
+    function markEditable() {
+        document.body.classList.add('artifact-editable');
+    }
+
+    // Credit badge with idle-fade. Hover devices only.
+    function initChromeUI() {
+        if (!matchMedia('(hover: hover)').matches) return;
+
+        var credit = document.createElement('div');
+        credit.className = 'design-ui-credit';
+        credit.setAttribute('aria-hidden', 'true');
+        credit.innerHTML = '\u{1F49C} by ClickUp Brain';
+        document.body.appendChild(credit);
+
+        var timer = null;
+        var fade = function (out) { credit.style.opacity = out ? '0' : ''; };
+        fade(true);
+        var show = function () {
+            fade(false);
+            clearTimeout(timer);
+            timer = setTimeout(function () { fade(true); }, 3000);
+        };
+        document.addEventListener('mousemove', show);
+        show();
+    }
+
+    function init() {
+        markEditable();
+        initChromeUI();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
+</script>
+<!-- /skill:chrome -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HalalGames Guide: Islamic Content Ratings for Games</title>
+<meta name="description" content="Search any video game for its Islamic content rating in seconds. Understand why a game is halal, caution, or best avoided.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"HalalGames Guide","url":"https://halalgames.mscarabia.com","description":"Search any game for its Islamic content rating and understand why.","applicationCategory":"UtilityApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{
+  --bg:#0a0e1a; --surface:#111827; --card:#1e293b; --card-2:#243449;
+  --border:#2a3a54; --border-lit:#38506f;
+  --text:#e2e8f0; --heading:#f1f5f9; --muted:#94a3b8;
+  --cyan:#22d3ee; --cyan-deep:#06b6d4;
+  --halal:#34d399; --halal-dim:#065f46;
+  --caution:#fbbf24; --caution-dim:#78350f;
+  --haram:#f87171; --haram-dim:#7f1d1d;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  --z-drawer:200; --z-modal:300; --z-toast:400;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif; font-weight:400;
+  background:var(--bg); color:var(--text);
+  min-height:100dvh; line-height:1.6; letter-spacing:.01em;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Space Grotesk','Inter',sans-serif;color:var(--heading);line-height:1.15;text-wrap:balance}
+p{text-wrap:pretty}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:6px}
+
+/* ===== ANIMATED BACKGROUND (CSS only) ===== */
+.bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bg-grid{position:absolute;inset:-50%;
+  background-image:
+    linear-gradient(rgba(34,211,238,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(34,211,238,.05) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 30%,#000 0%,transparent 75%);
+  animation:gridDrift 40s linear infinite;
+}
+@keyframes gridDrift{to{transform:translate(48px,48px)}}
+.glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;transition:background 1.2s var(--ease)}
+.glow-1{width:420px;height:420px;background:radial-gradient(circle,var(--cyan-deep),transparent 68%);top:-8%;left:-6%;animation:float1 22s ease-in-out infinite alternate}
+.glow-2{width:360px;height:360px;background:radial-gradient(circle,#3b1d6e,transparent 70%);top:40%;right:-8%;animation:float2 26s ease-in-out infinite alternate}
+.glow-3{width:300px;height:300px;background:radial-gradient(circle,var(--halal-dim),transparent 70%);bottom:-6%;left:35%;animation:float1 30s ease-in-out infinite alternate}
+@keyframes float1{to{transform:translate(40px,50px) scale(1.12)}}
+@keyframes float2{to{transform:translate(-50px,30px) scale(.9)}}
+.shape{position:absolute;border:1px solid rgba(34,211,238,.14);opacity:.35}
+.shape-a{width:120px;height:120px;top:18%;right:14%;animation:spin 34s linear infinite}
+.shape-b{width:70px;height:70px;bottom:22%;left:10%;border-radius:14px;animation:spin 24s linear infinite reverse}
+.shape-c{width:44px;height:44px;top:55%;left:52%;transform:rotate(45deg);border-color:rgba(52,211,153,.16);animation:spin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* verdict mood shifts the dominant glow */
+body[data-mood="halal"] .glow-1{background:radial-gradient(circle,#0b6b4f,transparent 68%)}
+body[data-mood="caution"] .glow-1{background:radial-gradient(circle,#7a5312,transparent 68%)}
+body[data-mood="haram"] .glow-1{background:radial-gradient(circle,#7a2530,transparent 68%)}
+
+.wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 var(--sp-4)}
+
+/* ===== LOADER ===== */
+#loader{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .4s var(--ease)}
+#loader.hide{opacity:0;pointer-events:none}
+.spinner{width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ===== HEADER ===== */
+header{position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);background:rgba(10,14,26,.72);border-bottom:1px solid var(--border)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;color:var(--heading);text-decoration:none}
+.brand .dot{width:11px;height:11px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.brand span{color:var(--cyan)}
+.burger{background:none;border:1px solid var(--border);border-radius:10px;width:40px;height:40px;color:var(--text);display:grid;place-items:center;font-size:1.15rem;transition:border-color .2s var(--ease),color .2s var(--ease)}
+.burger:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ===== HERO (compact, search-first) ===== */
+.hero{padding:var(--sp-6) 0 var(--sp-4)}
+.hero h1{font-size:clamp(1.5rem,4vw,2.1rem);margin-bottom:var(--sp-2);letter-spacing:-.01em}
+.hero h1 .accent{color:var(--cyan)}
+.hero .lede{color:var(--muted);font-size:.95rem;max-width:56ch;margin-bottom:var(--sp-5)}
+.search-wrap{position:relative;margin-bottom:var(--sp-4)}
+.search-ic{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+#search{width:100%;background:var(--card);border:1px solid var(--border-lit);border-radius:16px;color:var(--heading);font-size:1.1rem;padding:18px 18px 18px 52px;outline:none;transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+#search::placeholder{color:var(--muted)}
+#search:focus{border-color:var(--cyan);box-shadow:0 0 0 4px rgba(34,211,238,.14),0 10px 40px rgba(6,182,212,.12)}
+
+.controls{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-bottom:var(--sp-3)}
+.verdict-tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:3px;gap:2px}
+.vtab{border:none;background:transparent;color:var(--muted);font-weight:600;font-size:.8rem;padding:8px 14px;border-radius:9px;transition:background .2s var(--ease),color .2s var(--ease)}
+.vtab[aria-pressed="true"]{color:var(--bg)}
+.vtab[data-v="all"][aria-pressed="true"]{background:var(--cyan)}
+.vtab[data-v="halal"][aria-pressed="true"]{background:var(--halal)}
+.vtab[data-v="caution"][aria-pressed="true"]{background:var(--caution)}
+.vtab[data-v="haram"][aria-pressed="true"]{background:var(--haram)}
+.spacer{flex:1}
+#sort{background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.82rem;padding:9px 12px;outline:none}
+.view-toggle{display:flex;gap:3px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px}
+.vbtn{background:none;border:none;color:var(--muted);width:34px;height:32px;border-radius:8px;display:grid;place-items:center;transition:background .2s var(--ease),color .2s var(--ease)}
+.vbtn[aria-pressed="true"]{background:var(--cyan);color:var(--bg)}
+
+/* genre chips: horizontal scroll on mobile */
+.genre-row{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center;margin-bottom:var(--sp-5)}
+.chip{border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.78rem;font-weight:500;padding:6px 13px;border-radius:999px;white-space:nowrap;transition:border-color .2s var(--ease),color .2s var(--ease),background .2s var(--ease)}
+.chip:hover{border-color:var(--border-lit);color:var(--text)}
+.chip[aria-pressed="true"]{background:rgba(34,211,238,.12);border-color:var(--cyan);color:var(--cyan)}
+.chip-toggle{color:var(--cyan);font-weight:600;background:var(--card)}
+@media(max-width:640px){
+  .genre-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+  .genre-row::-webkit-scrollbar{display:none}
+}
+
+/* ===== RESULTS ===== */
+.result-meta{color:var(--muted);font-size:.8rem;margin-bottom:var(--sp-3);min-height:1.2em}
+.grid{display:grid;gap:var(--sp-3);grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.grid.list{grid-template-columns:1fr}
+
+.gcard{position:relative;text-align:left;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:var(--sp-4);transition:transform .25s var(--ease),border-color .25s var(--ease),background .25s var(--ease);overflow:hidden}
+.gcard::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .25s var(--ease)}
+.gcard:hover{transform:translateY(-3px);border-color:var(--border-lit);background:var(--card-2)}
+.gcard.v-halal:hover{border-color:var(--halal)}
+.gcard.v-caution:hover{border-color:var(--caution)}
+.gcard.v-haram:hover{border-color:var(--haram)}
+.gcard .gname{font-size:1.05rem;font-weight:600;margin-bottom:6px;padding-right:78px}
+.gcard .gmeta{color:var(--muted);font-size:.75rem;margin-bottom:var(--sp-3)}
+.badge{position:absolute;top:var(--sp-4);right:var(--sp-4);display:inline-flex;align-items:center;gap:5px;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+.badge.halal{background:rgba(52,211,153,.14);color:var(--halal)}
+.badge.caution{background:rgba(251,191,36,.14);color:var(--caution)}
+.badge.haram{background:rgba(248,113,113,.14);color:var(--haram)}
+.gcard .why-line{color:var(--text);font-size:.82rem;margin-bottom:var(--sp-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.scorebar{display:flex;align-items:center;gap:var(--sp-3)}
+.track{flex:1;height:6px;border-radius:4px;background:var(--surface);overflow:hidden}
+.fill{height:100%;border-radius:4px;transition:width .6s var(--ease)}
+.fill.halal{background:var(--halal)} .fill.caution{background:var(--caution)} .fill.haram{background:var(--haram)}
+.score-num{font-variant-numeric:tabular-nums;font-weight:700;font-size:.85rem;color:var(--heading);min-width:42px;text-align:right}
+.score-num small{color:var(--muted);font-weight:500}
+
+/* list layout tweaks */
+.grid.list .gcard{display:grid;grid-template-columns:1fr auto;align-items:center;gap:var(--sp-4);padding:var(--sp-3) var(--sp-4)}
+.grid.list .gcard .why-line{display:none}
+.grid.list .badge{position:static}
+.grid.list .gcard .gname{padding-right:0;margin-bottom:2px}
+.grid.list .gcard .gmeta{margin-bottom:0}
+.grid.list .right{display:flex;align-items:center;gap:var(--sp-4)}
+.grid.list .scorebar{width:150px}
+
+/* empty + skeleton */
+.empty{text-align:center;padding:var(--sp-8) var(--sp-4);color:var(--muted)}
+.empty .big{font-size:1.6rem;margin-bottom:var(--sp-2)}
+.skeleton{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:var(--sp-4);height:132px;position:relative;overflow:hidden}
+.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);animation:shim 1.4s infinite}
+@keyframes shim{to{transform:translateX(100%)}}
+
+/* ===== CONTENT SECTIONS ===== */
+.section{padding:var(--sp-7) 0;border-top:1px solid var(--border);scroll-margin-top:70px}
+.section h2{font-size:1.5rem;margin-bottom:var(--sp-4)}
+.section p{color:var(--text);max-width:68ch;margin-bottom:var(--sp-3)}
+.section p.muted{color:var(--muted);font-size:.9rem}
+.method{display:grid;gap:var(--sp-3);grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:var(--sp-4)}
+.method .item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:var(--sp-4)}
+.method .item h3{font-size:.95rem;color:var(--cyan);margin-bottom:6px}
+.method .item p{font-size:.85rem;color:var(--muted);margin:0}
+.reslist{list-style:none;display:grid;gap:var(--sp-2);margin-top:var(--sp-3)}
+.reslist a{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none;padding:12px 14px;border:1px solid var(--border);border-radius:10px;transition:border-color .2s var(--ease),color .2s var(--ease)}
+.reslist a:hover{border-color:var(--cyan);color:var(--cyan)}
+.reslist a small{color:var(--muted);font-weight:400}
+.contact-note{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:var(--sp-5);max-width:60ch}
+
+/* ===== FOOTER ===== */
+footer{border-top:1px solid var(--border);padding:var(--sp-6) 0;margin-top:var(--sp-7)}
+.foot{display:flex;flex-wrap:wrap;gap:var(--sp-4);align-items:center;justify-content:space-between}
+.foot .links{display:flex;gap:var(--sp-4);flex-wrap:wrap}
+.foot a{color:var(--muted);text-decoration:none;font-size:.82rem;transition:color .2s var(--ease)}
+.foot a:hover{color:var(--cyan)}
+.foot .made{color:var(--muted);font-size:.8rem}
+
+/* ===== DRAWER ===== */
+.overlay{position:fixed;inset:0;background:rgba(5,8,15,.7);z-index:var(--z-drawer);opacity:0;pointer-events:none;transition:opacity .25s var(--ease)}
+.overlay.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:-320px;width:300px;max-width:86vw;height:100%;background:var(--surface);border-left:1px solid var(--border);z-index:calc(var(--z-drawer) + 1);transition:right .3s var(--ease);padding:var(--sp-5);display:flex;flex-direction:column}
+.drawer.open{right:0}
+.drawer .close{align-self:flex-end;background:none;border:none;color:var(--muted);font-size:1.4rem;width:36px;height:36px}
+.drawer nav{display:flex;flex-direction:column;gap:var(--sp-1);margin-top:var(--sp-3)}
+.drawer nav button{background:none;border:none;color:var(--text);text-align:left;font-size:1.05rem;font-weight:500;padding:14px 12px;border-radius:10px;transition:background .2s var(--ease)}
+.drawer nav button:hover{background:var(--card)}
+
+/* ===== MODAL (native dialog) ===== */
+dialog{border:none;padding:0;background:transparent;max-width:100vw;max-height:100vh}
+dialog::backdrop{background:rgba(5,8,15,.82);backdrop-filter:blur(6px)}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;width:min(620px,94vw);max-height:90vh;overflow-y:auto;padding:var(--sp-6)}
+.modal .x{position:sticky;float:right;top:0;background:var(--card);border:none;color:var(--muted);width:36px;height:36px;border-radius:10px;font-size:1.1rem;transition:color .2s var(--ease),background .2s var(--ease)}
+.modal .x:hover{color:var(--heading);background:var(--card-2)}
+.m-head{display:flex;align-items:flex-start;gap:var(--sp-4);margin-bottom:var(--sp-5)}
+.m-emblem{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:1.2rem;flex-shrink:0}
+.m-emblem.halal{background:rgba(52,211,153,.14);color:var(--halal)}
+.m-emblem.caution{background:rgba(251,191,36,.14);color:var(--caution)}
+.m-emblem.haram{background:rgba(248,113,113,.14);color:var(--haram)}
+.m-title{font-size:1.4rem;margin-bottom:4px}
+.m-sub{color:var(--muted);font-size:.82rem}
+.m-verdict{display:flex;align-items:center;gap:var(--sp-4);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:var(--sp-4);margin-bottom:var(--sp-5)}
+.m-verdict .vlabel{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem}
+.m-verdict.halal .vlabel{color:var(--halal)} .m-verdict.caution .vlabel{color:var(--caution)} .m-verdict.haram .vlabel{color:var(--haram)}
+.m-verdict .ring{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;font-size:1.5rem;color:var(--heading)}
+.m-verdict .ring small{font-size:.7rem;color:var(--muted);font-weight:500}
+.m-block{margin-bottom:var(--sp-5)}
+.m-block h4{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:var(--sp-3)}
+.m-block ul{list-style:none;display:grid;gap:var(--sp-2)}
+.m-block li{display:flex;gap:10px;font-size:.9rem;line-height:1.5}
+.m-block li .mk{flex-shrink:0;margin-top:2px}
+.mk.good{color:var(--halal)} .mk.warn{color:var(--caution)} .mk.bad{color:var(--haram)}
+.alts{display:flex;gap:var(--sp-2);flex-wrap:wrap}
+.alt-chip{background:var(--card);border:1px solid var(--border);color:var(--text);font-size:.8rem;padding:8px 13px;border-radius:999px;transition:border-color .2s var(--ease),color .2s var(--ease)}
+.alt-chip:hover{border-color:var(--halal);color:var(--halal)}
+.stores{display:flex;gap:var(--sp-2);flex-wrap:wrap}
+.store-link{background:var(--card);border:1px solid var(--border);color:var(--text);font-size:.8rem;text-decoration:none;padding:8px 13px;border-radius:10px;transition:border-color .2s var(--ease),color .2s var(--ease)}
+.store-link:hover{border-color:var(--cyan);color:var(--cyan)}
+.m-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border)}
+.report-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:.8rem;padding:9px 14px;border-radius:10px;transition:border-color .2s var(--ease),color .2s var(--ease)}
+.report-btn:hover{border-color:var(--haram);color:var(--haram)}
+
+/* report form */
+.rform{display:flex;flex-direction:column;gap:var(--sp-3)}
+.rform label{font-size:.85rem;color:var(--muted)}
+.rform textarea{background:var(--card);border:1px solid var(--border-lit);border-radius:12px;color:var(--text);padding:12px 14px;font-family:inherit;font-size:.9rem;resize:vertical;min-height:110px;outline:none}
+.rform textarea:focus{border-color:var(--cyan)}
+.rform .actions{display:flex;gap:var(--sp-2);justify-content:flex-end}
+.btn{border:none;border-radius:10px;font-weight:600;font-size:.85rem;padding:10px 18px;transition:opacity .2s var(--ease),background .2s var(--ease)}
+.btn-primary{background:var(--cyan);color:var(--bg)}
+.btn-primary:hover{background:var(--cyan-deep)}
+.btn-ghost{background:var(--card);color:var(--text)}
+.btn-ghost:hover{background:var(--card-2)}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(0);background:var(--card);border:1px solid var(--border-lit);color:var(--text);padding:12px 20px;border-radius:12px;font-size:.85rem;z-index:var(--z-toast);opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+.disclaimer{text-align:center;color:var(--muted);font-size:.78rem;padding:var(--sp-4) 0}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+@media(max-width:560px){
+  .modal{padding:var(--sp-5) var(--sp-4)}
+  .m-head{gap:var(--sp-3)}
+  .controls .spacer{display:none}
+  .verdict-tabs{order:3;width:100%;justify-content:space-between}
+}
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner" role="status" aria-label="Loading"></div></div>
+
+<div class="bg-layer" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="glow glow-1"></div><div class="glow glow-2"></div><div class="glow glow-3"></div>
+  <div class="shape shape-a"></div><div class="shape shape-b"></div><div class="shape shape-c"></div>
+</div>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top"><span class="dot"></span>Halal<span>Games</span></a>
+    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <section class="hero">
+    <h1>Know <span class="accent">why</span> before you play.</h1>
+    <p class="lede">Search any game for its Islamic content rating. Not just a score, but the reasons behind it: faith, ethics, modesty, and violence.</p>
+    <div class="search-wrap">
+      <svg class="search-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="search" placeholder="Search a game, e.g. Minecraft, GTA V, Stardew Valley" autocomplete="off" aria-label="Search games">
+    </div>
+    <div class="controls">
+      <div class="verdict-tabs" role="group" aria-label="Filter by verdict">
+        <button class="vtab" data-v="all" aria-pressed="true">All</button>
+        <button class="vtab" data-v="halal" aria-pressed="false">Halal</button>
+        <button class="vtab" data-v="caution" aria-pressed="false">Caution</button>
+        <button class="vtab" data-v="haram" aria-pressed="false">Avoid</button>
+      </div>
+      <span class="spacer"></span>
+      <label class="visually-hidden" for="sort"></label>
+      <select id="sort" aria-label="Sort results">
+        <option value="relevance">Sort: Relevance</option>
+        <option value="score-desc">Highest score</option>
+        <option value="score-asc">Lowest score</option>
+        <option value="name">Name A to Z</option>
+      </select>
+      <div class="view-toggle" role="group" aria-label="View mode">
+        <button class="vbtn" id="view-grid" aria-pressed="true" aria-label="Grid view"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg></button>
+        <button class="vbtn" id="view-list" aria-pressed="false" aria-label="List view"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="3" rx="1"/><rect x="3" y="10.5" width="18" height="3" rx="1"/><rect x="3" y="17" width="18" height="3" rx="1"/></svg></button>
+      </div>
+    </div>
+    <div class="genre-row" id="genres" role="group" aria-label="Filter by genre"></div>
+    <div class="result-meta" id="result-meta" aria-live="polite"></div>
+    <div class="grid" id="results"></div>
+  </section>
+
+  <section class="section" id="about">
+    <h2>How the screener works</h2>
+    <p>HalalGames reads each game against a keyword-driven content engine and community-curated notes, then explains the reasoning in plain language. The goal is not to hand you a verdict to follow blindly, but to surface what actually matters so you can decide.</p>
+    <div class="method">
+      <div class="item"><h3>Faith Impact</h3><p>Shirk, magic, polytheism, mythology, and idol worship woven into story or mechanics.</p></div>
+      <div class="item"><h3>Financial Ethics</h3><p>Gambling, lootboxes, gacha, and card packs that mimic games of chance.</p></div>
+      <div class="item"><h3>Modesty</h3><p>Nudity, sexual content, and suggestive character design or themes.</p></div>
+      <div class="item"><h3>Violence Level</h3><p>Graphic gore and glorified violence versus stylized or cartoonish combat.</p></div>
+    </div>
+    <p class="muted" style="margin-top:var(--sp-4)">Scores run 0 to 100. Roughly, 75 and up reads as Halal Friendly, 45 to 74 as Caution, and below 45 as best Avoided. Scholars differ on specifics, so treat this as a starting point, not a ruling.</p>
+  </section>
+
+  <section class="section" id="resources">
+    <h2>Islamic gaming resources</h2>
+    <p>Deeper reading and communities for Muslim gamers who want scholarly grounding.</p>
+    <ul class="reslist">
+      <li><a href="https://islamqa.info" target="_blank" rel="noopener noreferrer">IslamQA <small>Fatwas on entertainment and gaming</small></a></li>
+      <li><a href="https://www.islamweb.org" target="_blank" rel="noopener noreferrer">IslamWeb <small>Scholarly articles on media and play</small></a></li>
+      <li><a href="https://halalguidelines.com" target="_blank" rel="noopener noreferrer">Halal Guidelines <small>Practical content guidance</small></a></li>
+    </ul>
+  </section>
+
+  <section class="section" id="contact">
+    <h2>Contact and feedback</h2>
+    <div class="contact-note">
+      <p style="margin-bottom:var(--sp-3)">Spotted a wrong verdict or want a game added? Use the report button inside any game to flag it, or reach the team directly.</p>
+      <a class="store-link" href="https://mscarabia.com" target="_blank" rel="noopener noreferrer">Contact MSC Arabia</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span class="made">Built by MSC Arabia. A community tool, not a religious ruling.</span>
+    <div class="links">
+      <a href="#privacy">Privacy</a><a href="#terms">Terms</a><a href="#cookies">Cookies</a>
+    </div>
+  </div>
+  <div class="wrap disclaimer">For informational purposes only. Always consult qualified scholars for personal guidance.</div>
+</footer>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <button class="close" id="drawer-close" aria-label="Close menu">&#10005;</button>
+  <nav>
+    <button data-scroll="about">About</button>
+    <button data-scroll="resources">Resources</button>
+    <button data-scroll="contact">Contact</button>
+  </nav>
+</aside>
+
+<dialog id="detail"></dialog>
+<dialog id="report">
+  <div class="modal">
+    <button class="x" data-close aria-label="Close">&#10005;</button>
+    <h3 style="font-size:1.2rem;margin-bottom:var(--sp-4)">Report a verdict</h3>
+    <form class="rform" id="report-form">
+      <label for="report-reason">What looks wrong? Tell us what to reconsider.</label>
+      <textarea id="report-reason" required maxlength="800" placeholder="e.g. This game removed lootboxes in a recent update."></textarea>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit report</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== HELPERS ===== */
+function esc(s){return s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function placeholderImage(name){const i=String(name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();return i||'?';}
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let toastT;
+function showToast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
+
+/* ===== BOUNDED LRU CACHE (max 50) ===== */
+const CACHE_MAX=50, cache=new Map();
+function cacheGet(k){if(!cache.has(k))return null;const v=cache.get(k);cache.delete(k);cache.set(k,v);return v;}
+function cacheSet(k,v){if(cache.has(k))cache.delete(k);cache.set(k,v);if(cache.size>CACHE_MAX)cache.delete(cache.keys().next().value);}
+
+/* ===== SCREENING ENGINE ===== */
+const CONTENT_RULES={
+  faith:{label:'Faith Impact',weight:34,kw:['shirk','magic','sorcery','sorcerer','witch','spell','polytheism','mythology','myth','gods','god of','goddess','idol','occult','demon','demonic','pagan','deity','ritual']},
+  finance:{label:'Financial Ethics',weight:26,kw:['gambling','gamble','lootbox','loot box','loot-box','gacha','microtransaction','casino','betting','card pack','ultimate team']},
+  modesty:{label:'Modesty',weight:24,kw:['nudity','nude','sexual','sex ','ecchi','suggestive','revealing','strip','adult','erotic']},
+  violence:{label:'Violence Level',weight:22,kw:['gore','gory','blood','bloody','graphic violence','brutal','fatalities','dismember','decapitat','torture']}
+};
+function screen(game){
+  if(game.verdict&&Array.isArray(game.reasons)){
+    return {verdict:game.verdict,score:game.score??defScore(game.verdict),reasons:game.reasons||[],warnings:game.warnings||[],curated:true};
+  }
+  const hay=((game.description||'')+' '+(game.genres||[]).join(' ')+' '+(game.tags||[]).map(t=>t.name||t).join(' ')+' '+(game.esrb||'')).toLowerCase();
+  let score=100; const warnings=[]; const hits={};
+  for(const key in CONTENT_RULES){
+    const r=CONTENT_RULES[key];
+    const matched=r.kw.filter(k=>hay.includes(k));
+    if(matched.length){hits[key]=matched;score-=r.weight*Math.min(1,0.5+matched.length*0.25);}
+  }
+  score=Math.max(0,Math.round(score));
+  if(hits.faith)warnings.push('Contains magic, mythology, or polytheistic themes that touch on faith.');
+  if(hits.finance)warnings.push('Includes gambling-style mechanics such as lootboxes or card packs.');
+  if(hits.modesty)warnings.push('May contain nudity, sexual content, or immodest themes.');
+  if(hits.violence)warnings.push('Features graphic violence, blood, or gore.');
+  let verdict='halal';
+  if(score<45)verdict='haram'; else if(score<75)verdict='caution';
+  const reasons=[];
+  if(verdict==='halal')reasons.push('No major faith, gambling, modesty, or graphic-violence flags detected.');
+  else reasons.push('This verdict is auto-generated from the game description and tags. Review the warnings and use your own judgment.');
+  return {verdict,score,reasons,warnings,curated:false};
+}
+function defScore(v){return v==='halal'?88:v==='caution'?60:20;}
+const VERDICT_LABEL={halal:'Halal Friendly',caution:'Caution',haram:'Best Avoided'};
+const VERDICT_SHORT={halal:'Halal',caution:'Caution',haram:'Avoid'};
+
+/* ===== STATE ===== */
+const STATE={all:[],view:'grid',verdict:'all',genre:null,sort:'relevance',genresExpanded:false,query:''};
+let INLINE_FALLBACK=[
+  {id:1,name:'Stardew Valley',slug:'stardew-valley',genres:['Simulation','RPG'],platforms:['PC','Mobile','Console'],description:'A peaceful farming simulation.',verdict:'halal',score:92,reasons:['No polytheistic or occult themes.','No gambling or lootboxes.'],warnings:['Alcohol depicted socially in a saloon, minor and avoidable.'],stores:['Steam','Nintendo Store']},
+  {id:2,name:'Minecraft',slug:'minecraft',genres:['Sandbox','Survival'],platforms:['PC','Mobile','Console'],description:'Build, explore, and survive.',verdict:'halal',score:88,reasons:['Open-ended creative play.','No real-money gambling.'],warnings:['Light fantasy elements like potions, disableable in peaceful mode.'],stores:['Minecraft.net','Xbox Store']},
+  {id:5,name:'Grand Theft Auto V',slug:'grand-theft-auto-v',genres:['Action','Adventure'],platforms:['PC','Console'],description:'Open-world crime game.',verdict:'haram',score:9,reasons:[],warnings:['Glorifies crime and murder.','Explicit sexual content and nudity.','In-game casino gambling and extreme violence.'],alternatives:['stardew-valley','minecraft'],stores:['Steam']}
+];
+
+/* ===== RENDER ===== */
+function verdictOf(g){g._s=g._s||screen(g);return g._s;}
+function cardHTML(g){
+  const s=verdictOf(g);
+  const meta=[...(g.genres||[]).slice(0,2),...(g.platforms||[]).slice(0,2)].join(' \u00b7 ');
+  const why=s.reasons[0]||s.warnings[0]||'';
+  return `<button class="gcard v-${s.verdict}" data-slug="${esc(g.slug)}">
+    <span class="badge ${s.verdict}">${VERDICT_SHORT[s.verdict]}</span>
+    <div class="gname">${esc(g.name)}</div>
+    <div class="gmeta">${esc(meta)}</div>
+    <div class="why-line">${esc(why)}</div>
+    <div class="right"><div class="scorebar"><div class="track"><div class="fill ${s.verdict}" style="width:${s.score}%"></div></div><div class="score-num">${s.score}<small>/100</small></div></div></div>
+  </button>`;
+}
+function currentSet(){
+  let set=STATE.all.slice();
+  if(STATE.query){const q=STATE.query.toLowerCase();set=set.filter(g=>g.name.toLowerCase().includes(q));}
+  if(STATE.verdict!=='all')set=set.filter(g=>verdictOf(g).verdict===STATE.verdict);
+  if(STATE.genre)set=set.filter(g=>(g.genres||[]).some(x=>x.toLowerCase()===STATE.genre.toLowerCase()));
+  if(STATE.sort==='score-desc')set.sort((a,b)=>verdictOf(b).score-verdictOf(a).score);
+  else if(STATE.sort==='score-asc')set.sort((a,b)=>verdictOf(a).score-verdictOf(b).score);
+  else if(STATE.sort==='name')set.sort((a,b)=>a.name.localeCompare(b.name));
+  return set;
+}
+function applyFilters(){
+  const set=currentSet();
+  const box=$('#results');
+  box.className='grid'+(STATE.view==='list'?' list':'');
+  if(!set.length){
+    box.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">No games found</div><div>Try a different search, or clear the filters.</div></div>`;
+    $('#result-meta').textContent='';
+    document.body.removeAttribute('data-mood');
+    return;
+  }
+  box.innerHTML=set.map(cardHTML).join('');
+  $('#result-meta').textContent=`${set.length} game${set.length===1?'':'s'}${STATE.query?` matching "${STATE.query}"`:''}`;
+  // mood = dominant verdict
+  const tally={halal:0,caution:0,haram:0};set.forEach(g=>tally[verdictOf(g).verdict]++);
+  const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);
+  document.body.setAttribute('data-mood',mood);
+}
+
+/* ===== GENRES ===== */
+function buildGenres(){
+  const counts={};STATE.all.forEach(g=>(g.genres||[]).forEach(x=>counts[x]=(counts[x]||0)+1));
+  const ordered=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
+  const row=$('#genres');
+  const shown=STATE.genresExpanded?ordered:ordered.slice(0,6);
+  row.innerHTML=shown.map(g=>`<button class="chip" data-genre="${esc(g)}" aria-pressed="${STATE.genre===g}">${esc(g)}</button>`).join('');
+  if(ordered.length>6){
+    const b=document.createElement('button');
+    b.className='chip chip-toggle';
+    b.textContent=STATE.genresExpanded?'\u2212 Less':`+ ${ordered.length-6} more`;
+    b.addEventListener('click',()=>{STATE.genresExpanded=!STATE.genresExpanded;buildGenres();});
+    row.appendChild(b);
+  }
+}
+
+/* ===== DETAIL MODAL ===== */
+let lastFocus=null;
+function trapFocus(dlg){
+  const f=dlg.querySelectorAll('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])');
+  if(!f.length)return;const first=f[0],last=f[f.length-1];
+  dlg.addEventListener('keydown',e=>{
+    if(e.key!=='Tab')return;
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
+}
+function storeUrl(store,name){
+  const map={'Steam':'https://store.steampowered.com/search/?term=','Epic Games':'https://store.epicgames.com/en-US/browse?q=','GOG':'https://www.gog.com/en/games?query=','Nintendo Store':'https://www.nintendo.com/us/search/?q=','PlayStation Store':'https://store.playstation.com/en-us/search/','Xbox Store':'https://www.xbox.com/en-US/Search/Results?q=','Battle.net':'https://us.shop.battle.net/en-us','Minecraft.net':'https://www.minecraft.net/'};
+  const base=map[store];
+  if(base)return base+encodeURIComponent(name);
+  return 'https://www.google.com/search?q='+encodeURIComponent(name+' '+store+' buy');// Google fallback
+}
+function openDetail(slug){
+  const g=STATE.all.find(x=>x.slug===slug);if(!g)return;
+  const s=verdictOf(g);
+  const dlg=$('#detail');lastFocus=document.activeElement;
+  const whyItems=(s.verdict==='halal'?s.reasons:s.reasons.concat([])).map(r=>`<li><span class="mk ${s.verdict==='halal'?'good':s.verdict==='caution'?'warn':'bad'}">${s.verdict==='halal'?'\u2713':'\u2022'}</span><span>${esc(r)}</span></li>`).join('')||'<li><span class="mk good">\u2713</span><span>No notable concerns recorded.</span></li>';
+  const warnItems=(s.warnings||[]).map(w=>`<li><span class="mk warn">\u26a0</span><span>${esc(w)}</span></li>`).join('');
+  const alts=(g.alternatives||[]).map(a=>{const t=STATE.all.find(x=>x.slug===a);return t?`<button class="alt-chip" data-slug="${esc(t.slug)}">${esc(t.name)}</button>`:'';}).join('');
+  const stores=(g.stores||[]).map(st=>`<a class="store-link" href="${storeUrl(st,g.name)}" target="_blank" rel="noopener noreferrer">${esc(st)}</a>`).join('')||`<a class="store-link" href="https://www.google.com/search?q=${encodeURIComponent(g.name+' buy')}" target="_blank" rel="noopener noreferrer">Search where to buy</a>`;
+  const meta=[...(g.genres||[]),...(g.platforms||[])].join(' \u00b7 ');
+  dlg.innerHTML=`<div class="modal">
+    <button class="x" data-close aria-label="Close">&#10005;</button>
+    <div class="m-head">
+      <div class="m-emblem ${s.verdict}">${esc(placeholderImage(g.name))}</div>
+      <div><h3 class="m-title">${esc(g.name)}</h3><div class="m-sub">${esc(meta)}</div></div>
+    </div>
+    <div class="m-verdict ${s.verdict}">
+      <span class="vlabel">${VERDICT_LABEL[s.verdict]}</span>
+      <span class="ring">${s.score}<small>/100</small></span>
+    </div>
+    <div class="m-block"><h4>Why this verdict</h4><ul>${whyItems}</ul></div>
+    ${warnItems?`<div class="m-block"><h4>What to watch for</h4><ul>${warnItems}</ul></div>`:''}
+    ${alts&&s.verdict!=='halal'?`<div class="m-block"><h4>Safer alternatives in this genre</h4><div class="alts">${alts}</div></div>`:''}
+    <div class="m-block"><h4>Where to buy</h4><div class="stores">${stores}</div></div>
+    <div class="m-foot">
+      <span class="m-sub">${s.curated?'Community curated':'Auto-screened'}</span>
+      <button class="report-btn" data-report="${esc(g.slug)}">Report this verdict</button>
+    </div>
+  </div>`;
+  dlg.showModal();trapFocus(dlg);
+  dlg.querySelector('.x').focus();
+}
+
+/* ===== SEARCH (RAWG proxy + debounce) ===== */
+const CONFIG={API_BASE:'/api/games'};
+let searchT;
+function normalizeApi(results){
+  return (results||[]).map(r=>({
+    id:r.id,name:r.name,slug:r.slug||String(r.name||'').toLowerCase().replace(/\s+/g,'-'),
+    genres:(r.genres||[]).map(x=>x.name||x),
+    platforms:(r.platforms||[]).map(p=>(p.platform&&p.platform.name)||p.name||p).slice(0,3),
+    description:r.description_raw||r.description||'',
+    tags:(r.tags||[]).map(t=>t.name||t),
+    esrb:(r.esrb_rating&&r.esrb_rating.name)||'',
+    stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean)
+  }));
+}
+async function runSearch(q){
+  STATE.query=q.trim();
+  if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}
+  // local matches first
+  const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));
+  const cached=cacheGet(STATE.query.toLowerCase());
+  if(cached){mergeResults(local,cached);return;}
+  // skeletons
+  $('#results').className='grid';
+  $('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');
+  try{
+    const res=await fetch(`${CONFIG.API_BASE}?search=${encodeURIComponent(STATE.query)}&page_size=20`);
+    if(!res.ok)throw new Error('bad status');
+    const data=await res.json();
+    const api=normalizeApi(data.results);
+    cacheSet(STATE.query.toLowerCase(),api);
+    mergeResults(local,api);
+  }catch(err){
+    if(local.length){mergeResults(local,[]);}
+    else{STATE.all=[];applyFilters();showToast('Live search is unavailable right now. Showing offline results only.');}
+  }
+}
+function mergeResults(local,api){
+  const seen=new Set(local.map(g=>g.slug));
+  const merged=local.concat(api.filter(g=>!seen.has(g.slug)));
+  STATE.all=merged;applyFilters();
+}
+
+/* ===== INIT ===== */
+async function loadSeed(){
+  try{
+    const res=await fetch('games.json',{cache:'force-cache'});
+    if(res.ok){const data=await res.json();if(Array.isArray(data)&&data.length)return data;}
+  }catch(e){}
+  return INLINE_FALLBACK;
+}
+async function init(){
+  STATE.seed=await loadSeed();
+  STATE.all=STATE.seed.slice();
+  buildGenres();applyFilters();
+  setTimeout(()=>$('#loader').classList.add('hide'),200);
+}
+
+/* ===== EVENTS ===== */
+$('#search').addEventListener('input',e=>{clearTimeout(searchT);const v=e.target.value;searchT=setTimeout(()=>runSearch(v),320);});
+$('#sort').addEventListener('change',e=>{STATE.sort=e.target.value;applyFilters();});
+$$('.vtab').forEach(b=>b.addEventListener('click',()=>{
+  STATE.verdict=b.dataset.v;
+  $$('.vtab').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  applyFilters();
+}));
+$('#view-grid').addEventListener('click',()=>{STATE.view='grid';$('#view-grid').setAttribute('aria-pressed','true');$('#view-list').setAttribute('aria-pressed','false');applyFilters();});
+$('#view-list').addEventListener('click',()=>{STATE.view='list';$('#view-list').setAttribute('aria-pressed','true');$('#view-grid').setAttribute('aria-pressed','false');applyFilters();});
+$('#genres').addEventListener('click',e=>{const c=e.target.closest('.chip[data-genre]');if(!c)return;const g=c.dataset.genre;STATE.genre=STATE.genre===g?null:g;buildGenres();applyFilters();});
+$('#results').addEventListener('click',e=>{const c=e.target.closest('.gcard');if(c)openDetail(c.dataset.slug);});
+
+/* detail modal delegated actions */
+$('#detail').addEventListener('click',e=>{
+  if(e.target.dataset.close!==undefined||e.target===e.currentTarget){$('#detail').close();return;}
+  const alt=e.target.closest('.alt-chip');if(alt){$('#detail').close();openDetail(alt.dataset.slug);return;}
+  const rep=e.target.closest('[data-report]');if(rep){$('#detail').dataset.reporting=rep.dataset.report;$('#report').showModal();trapFocus($('#report'));}
+});
+$('#detail').addEventListener('close',()=>{if(lastFocus)lastFocus.focus();});
+
+/* report modal */
+$('#report').addEventListener('click',e=>{if(e.target.dataset.close!==undefined||e.target===e.currentTarget)$('#report').close();});
+$('#report-form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const reason=$('#report-reason').value.trim();const slug=$('#detail').dataset.reporting||'';
+  if(!reason)return;
+  $('#report').close();$('#report-form').reset();
+  showToast('Thanks. Your report was submitted for review.');
+  try{await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,reason,ts:Date.now()})});}catch(err){/* optimistic, silent */}
+});
+
+/* drawer */
+function openDrawer(o){$('#drawer').classList.toggle('open',o);$('#overlay').classList.toggle('open',o);$('#burger').setAttribute('aria-expanded',o);$('#drawer').setAttribute('aria-hidden',!o);}
+$('#burger').addEventListener('click',()=>openDrawer(true));
+$('#drawer-close').addEventListener('click',()=>openDrawer(false));
+$('#overlay').addEventListener('click',()=>openDrawer(false));
+$$('.drawer nav button').forEach(b=>b.addEventListener('click',()=>{openDrawer(false);const el=document.getElementById(b.dataset.scroll);if(el)el.scrollIntoView({behavior:'smooth'});}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')openDrawer(false);});
+
+/* admin panel trigger (?admin=1) uses existing admin-check.js */
+if(new URLSearchParams(location.search).get('admin')==='1'){
+  fetch('/api/reports',{headers:{'X-Admin-Request':'1'}}).then(r=>{
+    if(r.status===403)showToast('Admin access requires a valid token.');
+    else if(r.ok)showToast('Admin: reports endpoint reachable.');
+  }).catch(()=>{});
+}
+
+init();
+</script>
+</body>
+</html>
