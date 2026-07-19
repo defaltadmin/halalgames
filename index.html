@@ -475,270 +475,188 @@ dialog::backdrop{background:rgba(5,8,15,.82);backdrop-filter:blur(6px)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-/* ===== HELPERS ===== */
 function esc(s){return s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function placeholderImage(name){const i=String(name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();return i||'?';}
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let toastT;
-function showToast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
-
-/* ===== BOUNDED LRU CACHE (max 50) ===== */
-const CACHE_MAX=50, cache=new Map();
+function showToast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
+const CACHE_MAX=50,cache=new Map();
 function cacheGet(k){if(!cache.has(k))return null;const v=cache.get(k);cache.delete(k);cache.set(k,v);return v;}
 function cacheSet(k,v){if(cache.has(k))cache.delete(k);cache.set(k,v);if(cache.size>CACHE_MAX)cache.delete(cache.keys().next().value);}
 
 /* ===== SCREENING ENGINE ===== */
-const CONTENT_RULES={
-  faith:{label:'Faith Impact',weight:34,kw:['shirk','magic','sorcery','sorcerer','witch','spell','polytheism','mythology','myth','gods','god of','goddess','idol','occult','demon','demonic','pagan','deity','ritual']},
-  finance:{label:'Financial Ethics',weight:26,kw:['gambling','gamble','lootbox','loot box','loot-box','gacha','microtransaction','casino','betting','card pack','ultimate team']},
-  modesty:{label:'Modesty',weight:24,kw:['nudity','nude','sexual','sex ','ecchi','suggestive','revealing','strip','adult','erotic']},
-  violence:{label:'Violence Level',weight:22,kw:['gore','gory','blood','bloody','graphic violence','brutal','fatalities','dismember','decapitat','torture']}
-};
-function screen(game){
-  if(game.verdict&&Array.isArray(game.reasons)){
-    return {verdict:game.verdict,score:game.score??defScore(game.verdict),reasons:game.reasons||[],warnings:game.warnings||[],curated:true};
-  }
-  const hay=((game.description||'')+' '+(game.genres||[]).join(' ')+' '+(game.tags||[]).map(t=>t.name||t).join(' ')+' '+(game.esrb||'')).toLowerCase();
-  let score=100; const warnings=[]; const hits={};
-  for(const key in CONTENT_RULES){
-    const r=CONTENT_RULES[key];
-    const matched=r.kw.filter(k=>hay.includes(k));
-    if(matched.length){hits[key]=matched;score-=r.weight*Math.min(1,0.5+matched.length*0.25);}
-  }
-  score=Math.max(0,Math.round(score));
-  if(hits.faith)warnings.push('Contains magic, mythology, or polytheistic themes that touch on faith.');
-  if(hits.finance)warnings.push('Includes gambling-style mechanics such as lootboxes or card packs.');
-  if(hits.modesty)warnings.push('May contain nudity, sexual content, or immodest themes.');
-  if(hits.violence)warnings.push('Features graphic violence, blood, or gore.');
-  let verdict='halal';
-  if(score<45)verdict='haram'; else if(score<75)verdict='caution';
-  const reasons=[];
-  if(verdict==='halal')reasons.push('No major faith, gambling, modesty, or graphic-violence flags detected.');
-  else reasons.push('This verdict is auto-generated from the game description and tags. Review the warnings and use your own judgment.');
-  return {verdict,score,reasons,warnings,curated:false};
-}
+const CONTENT_RULES={faith:{label:'Faith Impact',weight:34,kw:['shirk','magic','sorcery','witch','spell','polytheism','mythology','gods','goddess','idol','occult','demon','demonic','pagan','deity','ritual']},finance:{label:'Financial Ethics',weight:26,kw:['gambling','gamble','lootbox','loot box','gacha','microtransaction','casino','betting','card pack','ultimate team']},modesty:{label:'Modesty',weight:24,kw:['nudity','nude','sexual','ecchi','suggestive','revealing','strip','adult','erotic']},violence:{label:'Violence Level',weight:22,kw:['gore','gory','blood','bloody','graphic violence','brutal','fatalities','dismember','torture']}};
+function screen(game){if(game.verdict&&Array.isArray(game.reasons)){return{verdict:game.verdict,score:game.score??defScore(game.verdict),reasons:game.reasons||[],warnings:game.warnings||[],curated:true};}const hay=((game.description||'')+' '+(game.genres||[]).join(' ')+' '+(game.tags||[]).map(t=>t.name||t).join(' ')+(game.esrb||'')).toLowerCase();let score=100;const warnings=[];const hits={};for(const key in CONTENT_RULES){const r=CONTENT_RULES[key];const matched=r.kw.filter(k=>hay.includes(k));if(matched.length){hits[key]=matched;score-=r.weight*Math.min(1,0.5+matched.length*0.25);}}score=Math.max(0,Math.round(score));if(hits.faith)warnings.push('Contains magic, mythology, or polytheistic themes that touch on faith.');if(hits.finance)warnings.push('Includes gambling-style mechanics such as lootboxes or card packs.');if(hits.modesty)warnings.push('May contain nudity, sexual content, or immodest themes.');if(hits.violence)warnings.push('Features graphic violence, blood, or gore.');let verdict='halal';if(score<45)verdict='haram';else if(score<75)verdict='caution';const reasons=[];if(verdict==='halal')reasons.push('No major faith, gambling, modesty, or graphic-violence flags detected.');else reasons.push('This verdict is auto-generated. Review the warnings and use your own judgment.');return{verdict,score,reasons,warnings,curated:false};}
 function defScore(v){return v==='halal'?88:v==='caution'?60:20;}
 const VERDICT_LABEL={halal:'Halal Friendly',caution:'Caution',haram:'Best Avoided'};
-const VERDICT_SHORT={halal:'Halal',caution:'Caution',haram:'Avoid'};
 
 /* ===== STATE ===== */
-const STATE={all:[],view:'grid',verdict:'all',genre:null,sort:'relevance',genresExpanded:false,query:''};
-let INLINE_FALLBACK=[
-  {id:1,name:'Stardew Valley',slug:'stardew-valley',genres:['Simulation','RPG'],platforms:['PC','Mobile','Console'],description:'A peaceful farming simulation.',verdict:'halal',score:92,screeningStatus:'community-reviewed',reasons:['No polytheistic or occult themes.','No gambling or lootboxes.'],warnings:['Alcohol depicted socially in a saloon, minor and avoidable.'],stores:['Steam','Nintendo Store']},
-  {id:2,name:'Minecraft',slug:'minecraft',genres:['Sandbox','Survival'],platforms:['PC','Mobile','Console'],description:'Build, explore, and survive.',verdict:'halal',score:88,screeningStatus:'community-reviewed',reasons:['Open-ended creative play.','No real-money gambling.'],warnings:['Light fantasy elements like potions, disableable in peaceful mode.'],stores:['Minecraft.net','Xbox Store']},
-  {id:5,name:'Grand Theft Auto V',slug:'grand-theft-auto-v',genres:['Action','Adventure'],platforms:['PC','Console'],description:'Open-world crime game.',verdict:'haram',score:9,screeningStatus:'community-reviewed',reasons:[],warnings:['Glorifies crime and murder.','Explicit sexual content and nudity.','In-game casino gambling and extreme violence.'],alternatives:['stardew-valley','minecraft'],stores:[]}
-];
+const STATE={all:[],seed:[],view:'grid',verdict:'all',genre:null,sort:'relevance',genresExpanded:false,query:''};
+let INLINE_FALLBACK=[{id:1,name:'Stardew Valley',slug:'stardew-valley',genres:['Simulation','RPG'],platforms:['PC','Mobile','Console'],description:'A peaceful farming simulation.',verdict:'halal',score:92,screeningStatus:'community-reviewed',reasons:['No polytheistic or occult themes.','No gambling or lootboxes.'],warnings:['A saloon appears in-game and alcohol is depicted socially.'],stores:['Steam','Nintendo Store']},{id:2,name:'Minecraft',slug:'minecraft',genres:['Sandbox','Survival'],platforms:['PC','Mobile','Console'],description:'Build, explore, and survive.',verdict:'halal',score:88,screeningStatus:'community-reviewed',reasons:['Open-ended creative play.','No real-money gambling.'],warnings:['Light fantasy elements like potions.'],stores:['Minecraft.net','Xbox Store']},{id:5,name:'Grand Theft Auto V',slug:'grand-theft-auto-v',genres:['Action','Adventure'],platforms:['PC','Console'],description:'Open-world crime game.',verdict:'haram',score:9,screeningStatus:'community-reviewed',reasons:[],warnings:['Glorifies crime and murder.','Explicit sexual content and nudity.','In-game casino gambling and extreme violence.'],alternatives:['stardew-valley','minecraft'],stores:[]}];
 
 /* ===== RENDER ===== */
 function verdictOf(g){g._s=g._s||screen(g);return g._s;}
-function renderTags(g){
-  const genres=(g.genres||[]).map(x=>`<span class="tag tag-genre">${esc(x)}</span>`).join('');
-  const platforms=(g.platforms||[]).map(x=>`<span class="tag tag-platform">${esc(x)}</span>`).join('');
-  return `<div class="game-tags">${genres}${platforms}</div>`;
-}
-function canLinkStore(g){
-  return g.verdict==='halal'&&(g.screeningStatus||'unreviewed')==='community-reviewed'&&Array.isArray(g.stores)&&g.stores.length>0;
-}
-function renderStoreLinks(g){
-  if(!canLinkStore(g))return`<span class="store-note">Store links hidden until reviewed.</span>`;
-  return`<div class="stores">${g.stores.map(st=>`<a class="store-link" href="${esc(storeUrl(st,g.name))}" target="_blank" rel="noopener noreferrer sponsored">${esc(st)}</a>`).join('')}</div>`;
-}
-function cardHTML(g){
-  const s=verdictOf(g);
-  const status=g.screeningStatus||'unreviewed';
-  const why=s.reasons[0]||s.warnings[0]||'Awaiting content review.';
-  return`<button class="gcard v-${s.verdict} status-${status}" data-slug="${esc(g.slug)}">
-    <span class="badge ${s.verdict}">${s.verdict==='halal'?'Screened':s.verdict==='caution'?'Caution':s.verdict==='haram'?'Avoid':'Unreviewed'}</span>
-    <div class="gname">${esc(g.name)}</div>
-    ${renderTags(g)}
-    <div class="why-line">${esc(why)}</div>
-    <div class="right"><div class="scorebar"><div class="track"><div class="fill ${s.verdict}" style="width:${s.score}%"></div></div><div class="score-num">${s.score}<small>/100</small></div></div></div>
-  </button>`;
-}
-function currentSet(){
-  let set=STATE.all.slice();
-  if(STATE.query){const q=STATE.query.toLowerCase();set=set.filter(g=>g.name.toLowerCase().includes(q));}
-  if(STATE.verdict!=='all')set=set.filter(g=>verdictOf(g).verdict===STATE.verdict);
-  if(STATE.genre)set=set.filter(g=>(g.genres||[]).some(x=>x.toLowerCase()===STATE.genre.toLowerCase()));
-  if(STATE.sort==='score-desc')set.sort((a,b)=>verdictOf(b).score-verdictOf(a).score);
-  else if(STATE.sort==='score-asc')set.sort((a,b)=>verdictOf(a).score-verdictOf(b).score);
-  else if(STATE.sort==='name')set.sort((a,b)=>a.name.localeCompare(b.name));
-  return set;
-}
-function applyFilters(){
-  const set=currentSet();
-  const box=$('#results');
-  box.className='grid'+(STATE.view==='list'?' list':'');
-  if(!set.length){
-    box.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">No games found</div><div>Try a different search, or clear the filters.</div></div>`;
-    $('#result-meta').textContent='';
-    document.body.removeAttribute('data-mood');
-    return;
-  }
-  box.innerHTML=set.map(cardHTML).join('');
-  $('#result-meta').textContent=`${set.length} game${set.length===1?'':'}${STATE.query?` matching "${STATE.query}"`:''}`;
-  const tally={halal:0,caution:0,haram:0};set.forEach(g=>tally[verdictOf(g).verdict]++);
-  const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);
-  document.body.setAttribute('data-mood',mood);
-}
+function renderTags(g){const genres=(g.genres||[]).map(x=>`<span class="tag tag-genre">${esc(x)}</span>`).join('');const platforms=(g.platforms||[]).map(x=>`<span class="tag tag-platform">${esc(x)}</span>`).join('');return`<div class="game-tags">${genres}${platforms}</div>`;}
+function canLinkStore(g){return g.verdict==='halal'&&(g.screeningStatus||'unreviewed')==='community-reviewed'&&Array.isArray(g.stores)&&g.stores.length>0;}
+function renderStoreLinks(g){if(!canLinkStore(g))return`<span class="store-locked">Store links hidden until reviewed</span>`;return`<div class="stores">${g.stores.slice(0,2).map(st=>`<a class="store-link" href="${esc(storeUrl(st,g.name))}" target="_blank" rel="noopener noreferrer sponsored">${esc(st)}</a>`).join('')}</div>`;}
+function cardHTML(g){const s=verdictOf(g);const status=g.screeningStatus||'unreviewed';const why=s.reasons[0]||s.warnings[0]||'Awaiting content review.';return`<article class="game-card status-${status}" data-slug="${esc(g.slug)}"><div class="card-meta"><span class="status-dot"></span><span>${{halal:'Screened',caution:'Caution',haram:'Avoid',unreviewed:'Unreviewed'}[status]||'Unreviewed'}</span><span class="score">${Number.isFinite(s.score)?s.score+'/100':'Pending'}</span></div><h3>${esc(g.name)}</h3>${renderTags(g)}<p>${esc(why)}</p><div class="card-footer"><button class="details-button" data-game-slug="${esc(g.slug)}">View details</button>${renderStoreLinks(g)}</div></article>`;}
+function currentSet(){let set=STATE.all.slice();if(STATE.query){const q=STATE.query.toLowerCase();set=set.filter(g=>g.name.toLowerCase().includes(q));}if(STATE.verdict!=='all')set=set.filter(g=>verdictOf(g).verdict===STATE.verdict);if(STATE.genre)set=set.filter(g=>(g.genres||[]).some(x=>x.toLowerCase()===STATE.genre.toLowerCase()));if(STATE.sort==='score-desc')set.sort((a,b)=>verdictOf(b).score-verdictOf(a).score);else if(STATE.sort==='score-asc')set.sort((a,b)=>verdictOf(a).score-verdictOf(b).score);else if(STATE.sort==='name')set.sort((a,b)=>a.name.localeCompare(b.name));return set;}
+function applyFilters(){const set=currentSet();const box=$('#results');box.className='grid'+(STATE.view==='list'?' list':'');if(!set.length){box.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">No games found</div><div>Try a different search, or clear the filters.</div></div>`;$('#result-meta').textContent='';document.body.removeAttribute('data-mood');return;}box.innerHTML=set.map(cardHTML).join('');$('#result-meta').textContent=`${set.length} game${set.length===1?'':'}${STATE.query?` matching "${STATE.query}"`:''}`;const tally={halal:0,caution:0,haram:0};set.forEach(g=>tally[verdictOf(g).verdict]++);const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);document.body.setAttribute('data-mood',mood);}
 
 /* ===== GENRES ===== */
-function buildGenres(){
-  const counts={};STATE.all.forEach(g=>(g.genres||[]).forEach(x=>counts[x]=(counts[x]||0)+1));
-  const ordered=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
-  const row=$('#genres');
-  const shown=STATE.genresExpanded?ordered:ordered.slice(0,6);
-  row.innerHTML=shown.map(g=>`<button class="chip" data-genre="${esc(g)}" aria-pressed="${STATE.genre===g}">${esc(g)}</button>`).join('');
-  if(ordered.length>6){
-    const b=document.createElement('button');
-    b.className='chip chip-toggle';
-    b.textContent=STATE.genresExpanded?'\u2212 Less':`+ ${ordered.length-6} more`;
-    b.addEventListener('click',()=>{STATE.genresExpanded=!STATE.genresExpanded;buildGenres();});
-    row.appendChild(b);
-  }
-}
+function buildGenres(){const counts={};STATE.all.forEach(g=>(g.genres||[]).forEach(x=>counts[x]=(counts[x]||0)+1));const ordered=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);const row=$('#genres');const shown=STATE.genresExpanded?ordered:ordered.slice(0,6);row.innerHTML=shown.map(g=>`<button class="chip" data-genre="${esc(g)}" aria-pressed="${STATE.genre===g}">${esc(g)}</button>`).join('');if(ordered.length>6){const b=document.createElement('button');b.className='chip chip-toggle';b.textContent=STATE.genresExpanded?'\u2212 Less':`+ ${ordered.length-6} more`;b.addEventListener('click',()=>{STATE.genresExpanded=!STATE.genresExpanded;buildGenres();});row.appendChild(b);}}
 
 /* ===== DETAIL MODAL ===== */
 let lastFocus=null;
-function trapFocus(dlg){
-  const f=dlg.querySelectorAll('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])');
-  if(!f.length)return;const first=f[0],last=f[f.length-1];
-  dlg.addEventListener('keydown',e=>{
-    if(e.key!=='Tab')return;
-    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
-    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
-  });
-}
-function storeUrl(store,name){
-  const map={'Steam':'https://store.steampowered.com/search/?term=','Epic Games':'https://store.epicgames.com/en-US/browse?q=','GOG':'https://www.gog.com/en/games?query=','Nintendo Store':'https://www.nintendo.com/us/search/?q=','PlayStation Store':'https://store.playstation.com/en-us/search/','Xbox Store':'https://www.xbox.com/en-US/Search/Results?q=','Battle.net':'https://us.shop.battle.net/en-us','Minecraft.net':'https://www.minecraft.net/'};
-  const base=map[store];
-  if(base)return base+encodeURIComponent(name);
-  return 'https://www.google.com/search?q='+encodeURIComponent(name+' '+store+' buy');
-}
-function openDetail(slug){
-  const g=STATE.all.find(x=>x.slug===slug);if(!g)return;
-  const s=verdictOf(g);
-  const dlg=$('#detail');lastFocus=document.activeElement;
-  const whyItems=(s.verdict==='halal'?s.reasons:s.reasons.concat([])).map(r=>`<li><span class="mk ${s.verdict==='halal'?'good':s.verdict==='caution'?'warn':'bad'}">${s.verdict==='halal'?'\u2713':'\u2022'}</span><span>${esc(r)}</span></li>`).join('')||'<li><span class="mk good">\u2713</span><span>No notable concerns recorded.</span></li>';
-  const warnItems=(s.warnings||[]).map(w=>`<li><span class="mk warn">\u26a0</span><span>${esc(w)}</span></li>`).join('');
-  const alts=(g.alternatives||[]).map(a=>{const t=STATE.all.find(x=>x.slug===a);return t?`<button class="alt-chip" data-slug="${esc(t.slug)}">${esc(t.name)}</button>`:'';}).join('');
-  const stores=renderStoreLinks(g);
-  const meta=[...(g.genres||[]),...(g.platforms||[])].join(' \u00b7 ');
-  dlg.innerHTML=`<div class="modal">
-    <button class="x" data-close aria-label="Close">&#10005;</button>
-    <div class="m-head">
-      <div class="m-emblem ${s.verdict}">${esc(placeholderImage(g.name))}</div>
-      <div><h3 class="m-title">${esc(g.name)}</h3><div class="m-sub">${esc(meta)}</div></div>
-    </div>
-    <div class="m-verdict ${s.verdict}">
-      <span class="vlabel">${VERDICT_LABEL[s.verdict]||'Unreviewed'}</span>
-      <span class="ring">${s.score}<small>/100</small></span>
-    </div>
-    <div class="m-block"><h4>Why this verdict</h4><ul>${whyItems}</ul></div>
-    ${warnItems?`<div class="m-block"><h4>What to watch for</h4><ul>${warnItems}</ul></div>`:''}
-    ${alts&&s.verdict!=='halal'?`<div class="m-block"><h4>Safer alternatives in this genre</h4><div class="alts">${alts}</div></div>`:''}
-    <div class="m-block"><h4>Where to buy</h4>${stores}</div>
-    <div class="m-foot">
-      <span class="m-sub">${g.screeningStatus==='community-reviewed'?'Community curated':'Auto-screened'}</span>
-      <button class="report-btn" data-report="${esc(g.slug)}">Report this verdict</button>
-    </div>
-  </div>`;
-  dlg.showModal();trapFocus(dlg);
-  dlg.querySelector('.x').focus();
-}
+function trapFocus(dlg){const f=dlg.querySelectorAll('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])');if(!f.length)return;const first=f[0],last=f[f.length-1];dlg.addEventListener('keydown',e=>{if(e.key!=='Tab')return;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});}
+function storeUrl(store,name){const map={'Steam':'https://store.steampowered.com/search/?term=','Epic Games':'https://store.epicgames.com/en-US/browse?q=','GOG':'https://www.gog.com/en/games?query=','Nintendo Store':'https://www.nintendo.com/us/search/?q=','PlayStation Store':'https://store.playstation.com/en-us/search/','Xbox Store':'https://www.xbox.com/en-US/Search/Results?q=','Battle.net':'https://us.shop.battle.net/en-us','Minecraft.net':'https://www.minecraft.net/'};const base=map[store];if(base)return base+encodeURIComponent(name);return'https://www.google.com/search?q='+encodeURIComponent(name+' '+store+' buy');}
+function openDetail(slug){const g=STATE.all.find(x=>x.slug===slug);if(!g)return;const s=verdictOf(g);const dlg=$('#detail');lastFocus=document.activeElement;const whyItems=(s.verdict==='halal'?s.reasons:s.reasons.concat([])).map(r=>`<li><span class="mk ${s.verdict==='halal'?'good':s.verdict==='caution'?'warn':'bad'}">${s.verdict==='halal'?'\u2713':'\u2022'}</span><span>${esc(r)}</span></li>`).join('')||'<li><span class="mk good">\u2713</span><span>No notable concerns recorded.</span></li>';const warnItems=(s.warnings||[]).map(w=>`<li><span class="mk warn">\u26a0</span><span>${esc(w)}</span></li>`).join('');const alts=(g.alternatives||[]).map(a=>{const t=STATE.all.find(x=>x.slug===a);return t?`<button class="alt-chip" data-slug="${esc(t.slug)}">${esc(t.name)}</button>`:'';}).join('');const stores=renderStoreLinks(g);const meta=[...(g.genres||[]),...(g.platforms||[])].join(' \u00b7 ');dlg.innerHTML=`<div class="modal"><button class="x" data-close aria-label="Close">&#10005;</button><div class="m-head"><div class="m-emblem ${s.verdict}">${esc(placeholderImage(g.name))}</div><div><h3 class="m-title">${esc(g.name)}</h3><div class="m-sub">${esc(meta)}</div></div></div><div class="m-verdict ${s.verdict}"><span class="vlabel">${VERDICT_LABEL[s.verdict]||'Unreviewed'}</span><span class="ring">${s.score}<small>/100</small></span></div><div class="m-block"><h4>Why this verdict</h4><ul>${whyItems}</ul></div>${warnItems?`<div class="m-block"><h4>What to watch for</h4><ul>${warnItems}</ul></div>`:''}${alts&&s.verdict!=='halal'?`<div class="m-block"><h4>Safer alternatives</h4><div class="alts">${alts}</div></div>`:''}<div class="m-block"><h4>Where to buy</h4>${stores}</div><div class="m-foot"><span class="m-sub">${g.screeningStatus==='community-reviewed'?'Community curated':'Auto-screened'}</span><button class="report-btn" data-report="${esc(g.slug)}">Report this verdict</button></div></div>`;dlg.showModal();trapFocus(dlg);dlg.querySelector('.x').focus();}
 
-/* ===== SEARCH (RAWG proxy + debounce) ===== */
+/* ===== SEARCH ===== */
 const CONFIG={API_BASE:'/api/games'};
 let searchT;
-function normalizeApi(results){
-  return (results||[]).map(r=>({
-    id:r.id,name:r.name,slug:r.slug||String(r.name||'').toLowerCase().replace(/\s+/g,'-'),
-    genres:(r.genres||[]).map(x=>x.name||x),
-    platforms:(r.platforms||[]).map(p=>(p.platform&&p.platform.name)||p.name||p).slice(0,3),
-    description:r.description_raw||r.description||'',
-    tags:(r.tags||[]).map(t=>t.name||t),
-    esrb:(r.esrb_rating&&r.esrb_rating.name)||'',
-    stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean),
-    screeningStatus:'unreviewed'
-  }));
-}
-async function runSearch(q){
-  STATE.query=q.trim();
-  if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}
-  const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));
-  const cached=cacheGet(STATE.query.toLowerCase());
-  if(cached){mergeResults(local,cached);return;}
-  $('#results').className='grid';
-  $('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');
-  try{
-    const res=await fetch(`${CONFIG.API_BASE}?search=${encodeURIComponent(STATE.query)}&page_size=20`);
-    if(!res.ok)throw new Error('bad status');
-    const data=await res.json();
-    const api=normalizeApi(data.results);
-    cacheSet(STATE.query.toLowerCase(),api);
-    mergeResults(local,api);
-  }catch(err){
-    if(local.length){mergeResults(local,[]);}
-    else{STATE.all=[];applyFilters();showToast('Live search is unavailable right now. Showing offline results only.');}
-  }
-}
-function mergeResults(local,api){
-  const seen=new Set(local.map(g=>g.slug));
-  const merged=local.concat(api.filter(g=>!seen.has(g.slug)));
-  STATE.all=merged;applyFilters();
-}
+function normalizeApi(results){return(results||[]).map(r=>({id:r.id,name:r.name,slug:r.slug||String(r.name||'').toLowerCase().replace(/\s+/g,'-'),genres:(r.genres||[]).map(x=>x.name||x),platforms:(r.platforms||[]).map(p=>(p.platform&&p.platform.name)||p.name||p).slice(0,3),description:r.description_raw||r.description||'',tags:(r.tags||[]).map(t=>t.name||t),esrb:(r.esrb_rating&&r.esrb_rating.name)||'',stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean),screeningStatus:'unreviewed'}));}
+async function runSearch(q){STATE.query=q.trim();if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));const cached=cacheGet(STATE.query.toLowerCase());if(cached){mergeResults(local,cached);return;}$('#results').className='grid';$('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');try{const res=await fetch(`${CONFIG.API_BASE}?search=${encodeURIComponent(STATE.query)}&page_size=20`);if(!res.ok)throw new Error('bad status');const data=await res.json();const api=normalizeApi(data.results);cacheSet(STATE.query.toLowerCase(),api);mergeResults(local,api);}catch(err){if(local.length){mergeResults(local,[]);}else{STATE.all=[];applyFilters();showToast('Live search unavailable. Showing offline results.');}}}
+function mergeResults(local,api){const seen=new Set(local.map(g=>g.slug));const merged=local.concat(api.filter(g=>!seen.has(g.slug)));STATE.all=merged;applyFilters();}
 
 /* ===== VOTING ===== */
 function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
 function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
 function voteGame(gid,dir){const v=getVotes(),k=''+gid;if(!v[k])v[k]={up:0,dn:0,mv:0};const x=v[k];if(x.mv===dir){x[dir>0?'up':'dn']--;x.mv=0}else{if(x.mv!==0)x[x.mv>0?'up':'dn']--;x[dir>0?'up':'dn']++;x.mv=dir}setVotes(v);document.querySelectorAll('[data-game-id="'+gid+'"]').forEach(el=>{const u=el.querySelector('.vu'),d=el.querySelector('.vd');if(u){u.textContent='\u25B2 '+(v[k].up||0);u.className='vote-btn vu'+(v[k].mv===1?' voted-up':'')}if(d){d.textContent='\u25BC '+(v[k].dn||0);d.className='vote-btn vd'+(v[k].mv===-1?' voted-down':'')}})}
 
+/* ===== STEAM LIBRARY ===== */
+function normalizeTitle(v){return String(v||'').toLowerCase().replace(/[TM:!?'".,\-]/g,' ').replace(/\s+/g,' ').trim();}
+function matchSteamGame(steamGame){const title=normalizeTitle(steamGame.name);return STATE.seed.find(g=>g.steamAppId&&Number(g.steamAppId)===Number(steamGame.appid))||STATE.seed.find(g=>normalizeTitle(g.name)===title);}
+function renderSteamResults(ownedGames){const groups={halal:[],caution:[],haram:[],unknown:[]};ownedGames.forEach(owned=>{const game=matchSteamGame(owned);if(!game||game.screeningStatus!=='community-reviewed'){groups.unknown.push(owned);}else{groups[game.verdict]?.push(game);}});$('#steam-results').innerHTML=`<div class="steam-summary"><strong>${groups.halal.length}</strong> screened halal <strong>${groups.caution.length}</strong> caution <strong>${groups.haram.length}</strong> avoid <strong>${groups.unknown.length}</strong> needs review</div><h3 style="color:var(--heading);margin:16px 0 8px">Screened halal games</h3><div class="grid">${groups.halal.map(renderGameCard).join('')||'<p style="color:var(--muted)">No matches yet.</p>'}</div><h3 style="color:var(--heading);margin:16px 0 8px">Not yet reviewed</h3><div class="steam-unknown">${groups.unknown.map(g=>`<span class="tag tag-platform">${esc(g.name)}</span>`).join('')||'<p style="color:var(--muted)">Everything matched.</p>'}</div>`;}
+
+/* ===== RENDER ===== */
+function verdictOf(g){g._s=g._s||screen(g);return g._s;}
+function renderTags(g){const genres=(g.genres||[]).map(x=>`<span class="tag tag-genre">${esc(x)}</span>`).join('');const platforms=(g.platforms||[]).map(x=>`<span class="tag tag-platform">${esc(x)}</span>`).join('');return`<div class="game-tags">${genres}${platforms}</div>`;}
+function canLinkStore(g){return g.verdict==='halal'&&(g.screeningStatus||'unreviewed')==='community-reviewed'&&Array.isArray(g.stores)&&g.stores.length>0;}
+function renderStoreLinks(g){if(!canLinkStore(g))return`<span class="store-locked">Store links hidden until reviewed</span>`;return`<div class="stores">${g.stores.slice(0,2).map(st=>`<a class="store-link" href="${esc(storeUrl(st,g.name))}" target="_blank" rel="noopener noreferrer sponsored">${esc(st)}</a>`).join('')}</div>`;}
+function cardHTML(g){const s=verdictOf(g);const status=g.screeningStatus||'unreviewed';const why=s.reasons[0]||s.warnings[0]||'Awaiting content review.';return`<article class="game-card status-${status}" data-slug="${esc(g.slug)}"><div class="card-meta"><span class="status-dot"></span><span>${{halal:'Screened',caution:'Caution',haram:'Avoid',unreviewed:'Unreviewed'}[status]||'Unreviewed'}</span><span class="score">${Number.isFinite(s.score)?s.score+'/100':'Pending'}</span></div><h3>${esc(g.name)}</h3>${renderTags(g)}<p>${esc(why)}</p><div class="card-footer"><button class="details-button" data-game-slug="${esc(g.slug)}">View details</button>${renderStoreLinks(g)}</div></article>`;}
+function currentSet(){let set=STATE.all.slice();if(STATE.query){const q=STATE.query.toLowerCase();set=set.filter(g=>g.name.toLowerCase().includes(q));}if(STATE.verdict!=='all')set=set.filter(g=>verdictOf(g).verdict===STATE.verdict);if(STATE.genre)set=set.filter(g=>(g.genres||[]).some(x=>x.toLowerCase()===STATE.genre.toLowerCase()));if(STATE.sort==='score-desc')set.sort((a,b)=>verdictOf(b).score-verdictOf(a).score);else if(STATE.sort==='score-asc')set.sort((a,b)=>verdictOf(a).score-verdictOf(b).score);else if(STATE.sort==='name')set.sort((a,b)=>a.name.localeCompare(b.name));return set;}
+function applyFilters(){const set=currentSet();const box=$('#results');box.className='grid'+(STATE.view==='list'?' list':'');if(!set.length){box.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">No games found</div><div>Try a different search, or clear the filters.</div></div>`;$('#result-meta').textContent='';document.body.removeAttribute('data-mood');return;}box.innerHTML=set.map(cardHTML).join('');$('#result-meta').textContent=`${set.length} game${set.length===1?'':'}${STATE.query?` matching "${STATE.query}"`:''}`;const tally={halal:0,caution:0,haram:0};set.forEach(g=>tally[verdictOf(g).verdict]++);const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);document.body.setAttribute('data-mood',mood);}
+
+/* ===== GENRES ===== */
+function buildGenres(){const counts={};STATE.all.forEach(g=>(g.genres||[]).forEach(x=>counts[x]=(counts[x]||0)+1));const ordered=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);const row=$('#genres');const shown=STATE.genresExpanded?ordered:ordered.slice(0,6);row.innerHTML=shown.map(g=>`<button class="chip" data-genre="${esc(g)}" aria-pressed="${STATE.genre===g}">${esc(g)}</button>`).join('');if(ordered.length>6){const b=document.createElement('button');b.className='chip chip-toggle';b.textContent=STATE.genresExpanded?'\u2212 Less':`+ ${ordered.length-6} more`;b.addEventListener('click',()=>{STATE.genresExpanded=!STATE.genresExpanded;buildGenres();});row.appendChild(b);}}
+
+/* ===== DETAIL MODAL ===== */
+let lastFocus=null;
+function trapFocus(dlg){const f=dlg.querySelectorAll('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])');if(!f.length)return;const first=f[0],last=f[f.length-1];dlg.addEventListener('keydown',e=>{if(e.key!=='Tab')return;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});}
+function storeUrl(store,name){const map={'Steam':'https://store.steampowered.com/search/?term=','Epic Games':'https://store.epicgames.com/en-US/browse?q=','GOG':'https://www.gog.com/en/games?query=','Nintendo Store':'https://www.nintendo.com/us/search/?q=','PlayStation Store':'https://store.playstation.com/en-us/search/','Xbox Store':'https://www.xbox.com/en-US/Search/Results?q=','Battle.net':'https://us.shop.battle.net/en-us','Minecraft.net':'https://www.minecraft.net/'};const base=map[store];if(base)return base+encodeURIComponent(name);return'https://www.google.com/search?q='+encodeURIComponent(name+' '+store+' buy');}
+function openDetail(slug){const g=STATE.all.find(x=>x.slug===slug);if(!g)return;const s=verdictOf(g);const dlg=$('#detail');lastFocus=document.activeElement;const whyItems=(s.verdict==='halal'?s.reasons:s.reasons.concat([])).map(r=>`<li><span class="mk ${s.verdict==='halal'?'good':s.verdict==='caution'?'warn':'bad'}">${s.verdict==='halal'?'\u2713':'\u2022'}</span><span>${esc(r)}</span></li>`).join('')||'<li><span class="mk good">\u2713</span><span>No notable concerns recorded.</span></li>';const warnItems=(s.warnings||[]).map(w=>`<li><span class="mk warn">\u26a0</span><span>${esc(w)}</span></li>`).join('');const alts=(g.alternatives||[]).map(a=>{const t=STATE.all.find(x=>x.slug===a);return t?`<button class="alt-chip" data-slug="${esc(t.slug)}">${esc(t.name)}</button>`:'';}).join('');const stores=renderStoreLinks(g);const meta=[...(g.genres||[]),...(g.platforms||[])].join(' \u00b7 ');dlg.innerHTML=`<div class="modal"><button class="x" data-close aria-label="Close">&#10005;</button><div class="m-head"><div class="m-emblem ${s.verdict}">${esc(placeholderImage(g.name))}</div><div><h3 class="m-title">${esc(g.name)}</h3><div class="m-sub">${esc(meta)}</div></div></div><div class="m-verdict ${s.verdict}"><span class="vlabel">${VERDICT_LABEL[s.verdict]||'Unreviewed'}</span><span class="ring">${s.score}<small>/100</small></span></div><div class="m-block"><h4>Why this verdict</h4><ul>${whyItems}</ul></div>${warnItems?`<div class="m-block"><h4>What to watch for</h4><ul>${warnItems}</ul></div>`:''}${alts&&s.verdict!=='halal'?`<div class="m-block"><h4>Safer alternatives</h4><div class="alts">${alts}</div></div>`:''}<div class="m-block"><h4>Where to buy</h4>${stores}</div><div class="m-foot"><span class="m-sub">${g.screeningStatus==='community-reviewed'?'Community curated':'Auto-screened'}</span><button class="report-btn" data-report="${esc(g.slug)}">Report this verdict</button></div></div>`;dlg.showModal();trapFocus(dlg);dlg.querySelector('.x').focus();}
+
+/* ===== SEARCH ===== */
+const CONFIG={API_BASE:'/api/games'};
+let searchT;
+function normalizeApi(results){return(results||[]).map(r=>({id:r.id,name:r.name,slug:r.slug||String(r.name||'').toLowerCase().replace(/\s+/g,'-'),genres:(r.genres||[]).map(x=>x.name||x),platforms:(r.platforms||[]).map(p=>(p.platform&&p.platform.name)||p.name||p).slice(0,3),description:r.description_raw||r.description||'',tags:(r.tags||[]).map(t=>t.name||t),esrb:(r.esrb_rating&&r.esrb_rating.name)||'',stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean),screeningStatus:'unreviewed'}));}
+async function runSearch(q){STATE.query=q.trim();if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));const cached=cacheGet(STATE.query.toLowerCase());if(cached){mergeResults(local,cached);return;}$('#results').className='grid';$('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');try{const res=await fetch(`${CONFIG.API_BASE}?search=${encodeURIComponent(STATE.query)}&page_size=20`);if(!res.ok)throw new Error('bad status');const data=await res.json();const api=normalizeApi(data.results);cacheSet(STATE.query.toLowerCase(),api);mergeResults(local,api);}catch(err){if(local.length){mergeResults(local,[]);}else{STATE.all=[];applyFilters();showToast('Live search unavailable. Showing offline results.');}}}
+function mergeResults(local,api){const seen=new Set(local.map(g=>g.slug));const merged=local.concat(api.filter(g=>!seen.has(g.slug)));STATE.all=merged;applyFilters();}
+
+/* ===== VOTING ===== */
+function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
+function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
+function voteGame(gid,dir){const v=getVotes(),k=''+gid;if(!v[k])v[k]={up:0,dn:0,mv:0};const x=v[k];if(x.mv===dir){x[dir>0?'up':'dn']--;x.mv=0}else{if(x.mv!==0)x[x.mv>0?'up':'dn']--;x[dir>0?'up':'dn']++;x.mv=dir}setVotes(v);document.querySelectorAll('[data-game-id="'+gid+'"]').forEach(el=>{const u=el.querySelector('.vu'),d=el.querySelector('.vd');if(u){u.textContent='\u25B2 '+(v[k].up||0);u.className='vote-btn vu'+(v[k].mv===1?' voted-up':'')}if(d){d.textContent='\u25BC '+(v[k].dn||0);d.className='vote-btn vd'+(v[k].mv===-1?' voted-down':'')}})}
+
+/* ===== STEAM LIBRARY ===== */
+function normalizeTitle(v){return String(v||'').toLowerCase().replace(/[TM:!?'".,\-]/g,' ').replace(/\s+/g,' ').trim();}
+function matchSteamGame(steamGame){const title=normalizeTitle(steamGame.name);return STATE.seed.find(g=>g.steamAppId&&Number(g.steamAppId)===Number(steamGame.appid))||STATE.seed.find(g=>normalizeTitle(g.name)===title);}
+function renderSteamResults(ownedGames){const groups={halal:[],caution:[],haram:[],unknown:[]};ownedGames.forEach(owned=>{const game=matchSteamGame(owned);if(!game||game.screeningStatus!=='community-reviewed'){groups.unknown.push(owned);}else{groups[game.verdict]?.push(game);}});$('#steam-results').innerHTML=`<div class="steam-summary"><strong>${groups.halal.length}</strong> screened halal <strong>${groups.caution.length}</strong> caution <strong>${groups.haram.length}</strong> avoid <strong>${groups.unknown.length}</strong> needs review</div><h3 style="color:var(--heading);margin:16px 0 8px">Screened halal games</h3><div class="grid">${groups.halal.map(renderGameCard).join('')||'<p style="color:var(--muted)">No matches yet.</p>'}</div><h3 style="color:var(--heading);margin:16px 0 8px">Not yet reviewed</h3><div class="steam-unknown">${groups.unknown.map(g=>`<span class="tag tag-platform">${esc(g.name)}</span>`).join('')||'<p style="color:var(--muted)">Everything matched.</p>'}</div>`;}
+
+/* ===== RENDER ===== */
+function verdictOf(g){g._s=g._s||screen(g);return g._s;}
+function renderTags(g){const genres=(g.genres||[]).map(x=>`<span class="tag tag-genre">${esc(x)}</span>`).join('');const platforms=(g.platforms||[]).map(x=>`<span class="tag tag-platform">${esc(x)}</span>`).join('');return`<div class="game-tags">${genres}${platforms}</div>`;}
+function canLinkStore(g){return g.verdict==='halal'&&(g.screeningStatus||'unreviewed')==='community-reviewed'&&Array.isArray(g.stores)&&g.stores.length>0;}
+function renderStoreLinks(g){if(!canLinkStore(g))return`<span class="store-locked">Store links hidden until reviewed</span>`;return`<div class="stores">${g.stores.slice(0,2).map(st=>`<a class="store-link" href="${esc(storeUrl(st,g.name))}" target="_blank" rel="noopener noreferrer sponsored">${esc(st)}</a>`).join('')}</div>`;}
+function cardHTML(g){const s=verdictOf(g);const status=g.screeningStatus||'unreviewed';const why=s.reasons[0]||s.warnings[0]||'Awaiting content review.';return`<article class="game-card status-${status}" data-slug="${esc(g.slug)}"><div class="card-meta"><span class="status-dot"></span><span>${{halal:'Screened',caution:'Caution',haram:'Avoid',unreviewed:'Unreviewed'}[status]||'Unreviewed'}</span><span class="score">${Number.isFinite(s.score)?s.score+'/100':'Pending'}</span></div><h3>${esc(g.name)}</h3>${renderTags(g)}<p>${esc(why)}</p><div class="card-footer"><button class="details-button" data-game-slug="${esc(g.slug)}">View details</button>${renderStoreLinks(g)}</div></article>`;}
+function currentSet(){let set=STATE.all.slice();if(STATE.query){const q=STATE.query.toLowerCase();set=set.filter(g=>g.name.toLowerCase().includes(q));}if(STATE.verdict!=='all')set=set.filter(g=>verdictOf(g).verdict===STATE.verdict);if(STATE.genre)set=set.filter(g=>(g.genres||[]).some(x=>x.toLowerCase()===STATE.genre.toLowerCase()));if(STATE.sort==='score-desc')set.sort((a,b)=>verdictOf(b).score-verdictOf(a).score);else if(STATE.sort==='score-asc')set.sort((a,b)=>verdictOf(a).score-verdictOf(b).score);else if(STATE.sort==='name')set.sort((a,b)=>a.name.localeCompare(b.name));return set;}
+function applyFilters(){const set=currentSet();const box=$('#results');box.className='grid'+(STATE.view==='list'?' list':'');if(!set.length){box.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">No games found</div><div>Try a different search, or clear the filters.</div></div>`;$('#result-meta').textContent='';document.body.removeAttribute('data-mood');return;}box.innerHTML=set.map(cardHTML).join('');$('#result-meta').textContent=`${set.length} game${set.length===1?'':'}${STATE.query?` matching "${STATE.query}"`:''}`;const tally={halal:0,caution:0,haram:0};set.forEach(g=>tally[verdictOf(g).verdict]++);const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);document.body.setAttribute('data-mood',mood);}
+
+/* ===== GENRES ===== */
+function buildGenres(){const counts={};STATE.all.forEach(g=>(g.genres||[]).forEach(x=>counts[x]=(counts[x]||0)+1));const ordered=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);const row=$('#genres');const shown=STATE.genresExpanded?ordered:ordered.slice(0,6);row.innerHTML=shown.map(g=>`<button class="chip" data-genre="${esc(g)}" aria-pressed="${STATE.genre===g}">${esc(g)}</button>`).join('');if(ordered.length>6){const b=document.createElement('button');b.className='chip chip-toggle';b.textContent=STATE.genresExpanded?'\u2212 Less':`+ ${ordered.length-6} more`;b.addEventListener('click',()=>{STATE.genresExpanded=!STATE.genresExpanded;buildGenres();});row.appendChild(b);}}
+
+/* ===== DETAIL MODAL ===== */
+let lastFocus=null;
+function trapFocus(dlg){const f=dlg.querySelectorAll('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])');if(!f.length)return;const first=f[0],last=f[f.length-1];dlg.addEventListener('keydown',e=>{if(e.key!=='Tab')return;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});}
+function storeUrl(store,name){const map={'Steam':'https://store.steampowered.com/search/?term=','Epic Games':'https://store.epicgames.com/en-US/browse?q=','GOG':'https://www.gog.com/en/games?query=','Nintendo Store':'https://www.nintendo.com/us/search/?q=','PlayStation Store':'https://store.playstation.com/en-us/search/','Xbox Store':'https://www.xbox.com/en-US/Search/Results?q=','Battle.net':'https://us.shop.battle.net/en-us','Minecraft.net':'https://www.minecraft.net/'};const base=map[store];if(base)return base+encodeURIComponent(name);return'https://www.google.com/search?q='+encodeURIComponent(name+' '+store+' buy');}
+function openDetail(slug){const g=STATE.all.find(x=>x.slug===slug);if(!g)return;const s=verdictOf(g);const dlg=$('#detail');lastFocus=document.activeElement;const whyItems=(s.verdict==='halal'?s.reasons:s.reasons.concat([])).map(r=>`<li><span class="mk ${s.verdict==='halal'?'good':s.verdict==='caution'?'warn':'bad'}">${s.verdict==='halal'?'\u2713':'\u2022'}</span><span>${esc(r)}</span></li>`).join('')||'<li><span class="mk good">\u2713</span><span>No notable concerns recorded.</span></li>';const warnItems=(s.warnings||[]).map(w=>`<li><span class="mk warn">\u26a0</span><span>${esc(w)}</span></li>`).join('');const alts=(g.alternatives||[]).map(a=>{const t=STATE.all.find(x=>x.slug===a);return t?`<button class="alt-chip" data-slug="${esc(t.slug)}">${esc(t.name)}</button>`:'';}).join('');const stores=renderStoreLinks(g);const meta=[...(g.genres||[]),...(g.platforms||[])].join(' \u00b7 ');dlg.innerHTML=`<div class="modal"><button class="x" data-close aria-label="Close">&#10005;</button><div class="m-head"><div class="m-emblem ${s.verdict}">${esc(placeholderImage(g.name))}</div><div><h3 class="m-title">${esc(g.name)}</h3><div class="m-sub">${esc(meta)}</div></div></div><div class="m-verdict ${s.verdict}"><span class="vlabel">${VERDICT_LABEL[s.verdict]||'Unreviewed'}</span><span class="ring">${s.score}<small>/100</small></span></div><div class="m-block"><h4>Why this verdict</h4><ul>${whyItems}</ul></div>${warnItems?`<div class="m-block"><h4>What to watch for</h4><ul>${warnItems}</ul></div>`:''}${alts&&s.verdict!=='halal'?`<div class="m-block"><h4>Safer alternatives</h4><div class="alts">${alts}</div></div>`:''}<div class="m-block"><h4>Where to buy</h4>${stores}</div><div class="m-foot"><span class="m-sub">${g.screeningStatus==='community-reviewed'?'Community curated':'Auto-screened'}</span><button class="report-btn" data-report="${esc(g.slug)}">Report this verdict</button></div></div>`;dlg.showModal();trapFocus(dlg);dlg.querySelector('.x').focus();}
+
+/* ===== SEARCH ===== */
+const CONFIG={API_BASE:'/api/games'};
+let searchT;
+function normalizeApi(results){return(results||[]).map(r=>({id:r.id,name:r.name,slug:r.slug||String(r.name||'').toLowerCase().replace(/\s+/g,'-'),genres:(r.genres||[]).map(x=>x.name||x),platforms:(r.platforms||[]).map(p=>(p.platform&&p.platform.name)||p.name||p).slice(0,3),description:r.description_raw||r.description||'',tags:(r.tags||[]).map(t=>t.name||t),esrb:(r.esrb_rating&&r.esrb_rating.name)||'',stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean),screeningStatus:'unreviewed'}));}
+async function runSearch(q){STATE.query=q.trim();if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));const cached=cacheGet(STATE.query.toLowerCase());if(cached){mergeResults(local,cached);return;}$('#results').className='grid';$('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');try{const res=await fetch(`${CONFIG.API_BASE}?search=${encodeURIComponent(STATE.query)}&page_size=20`);if(!res.ok)throw new Error('bad status');const data=await res.json();const api=normalizeApi(data.results);cacheSet(STATE.query.toLowerCase(),api);mergeResults(local,api);}catch(err){if(local.length){mergeResults(local,[]);}else{STATE.all=[];applyFilters();showToast('Live search unavailable. Showing offline results.');}}}
+function mergeResults(local,api){const seen=new Set(local.map(g=>g.slug));const merged=local.concat(api.filter(g=>!seen.has(g.slug)));STATE.all=merged;applyFilters();}
+
+/* ===== VOTING ===== */
+function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
+function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
+function voteGame(gid,dir){const v=getVotes(),k=''+gid;if(!v[k])v[k]={up:0,dn:0,mv:0};const x=v[k];if(x.mv===dir){x[dir>0?'up':'dn']--;x.mv=0}else{if(x.mv!==0)x[x.mv>0?'up':'dn']--;x[dir>0?'up':'dn']++;x.mv=dir}setVotes(v);document.querySelectorAll('[data-game-id="'+gid+'"]').forEach(el=>{const u=el.querySelector('.vu'),d=el.querySelector('.vd');if(u){u.textContent='\u25B2 '+(v[k].up||0);u.className='vote-btn vu'+(v[k].mv===1?' voted-up':'')}if(d){d.textContent='\u25BC '+(v[k].dn||0);d.className='vote-btn vd'+(v[k].mv===-1?' voted-down':'')}})}
+
+/* ===== STEAM LIBRARY ===== */
+function normalizeTitle(v){return String(v||'').toLowerCase().replace(/[TM:!?'".,\-]/g,' ').replace(/\s+/g,' ').trim();}
+function matchSteamGame(steamGame){const title=normalizeTitle(steamGame.name);return STATE.seed.find(g=>g.steamAppId&&Number(g.steamAppId)===Number(steamGame.appid))||STATE.seed.find(g=>normalizeTitle(g.name)===title);}
+function renderSteamResults(ownedGames){const groups={halal:[],caution:[],haram:[],unknown:[]};ownedGames.forEach(owned=>{const game=matchSteamGame(owned);if(!game||game.screeningStatus!=='community-reviewed'){groups.unknown.push(owned);}else{groups[game.verdict]?.push(game);}});$('#steam-results').innerHTML=`<div class="steam-summary"><strong>${groups.halal.length}</strong> screened halal <strong>${groups.caution.length}</strong> caution <strong>${groups.haram.length}</strong> avoid <strong>${groups.unknown.length}</strong> needs review</div><h3 style="color:var(--heading);margin:16px 0 8px">Screened halal games</h3><div class="grid">${groups.halal.map(renderGameCard).join('')||'<p style="color:var(--muted)">No matches yet.</p>'}</div><h3 style="color:var(--heading);margin:16px 0 8px">Not yet reviewed</h3><div class="steam-unknown">${groups.unknown.map(g=>`<span class="tag tag-platform">${esc(g.name)}</span>`).join('')||'<p style="color:var(--muted)">Everything matched.</p>'}</div>`;}
+
+/* ===== RENDER ===== */
+function verdictOf(g){g._s=g._s||screen(g);return g._s;}
+function renderTags(g){const genres=(g.genres||[]).map(x=>`<span class="tag tag-genre">${esc(x)}</span>`).join('');const platforms=(g.platforms||[]).map(x=>`<span class="tag tag-platform">${esc(x)}</span>`).join('');return`<div class="game-tags">${genres}${platforms}</div>`;}
+function canLinkStore(g){return g.verdict==='halal'&&(g.screeningStatus||'unreviewed')==='community-reviewed'&&Array.isArray(g.stores)&&g.stores.length>0;}
+function renderStoreLinks(g){if(!canLinkStore(g))return`<span class="store-locked">Store links hidden until reviewed</span>`;return`<div class="stores">${g.stores.slice(0,2).map(st=>`<a class="store-link" href="${esc(storeUrl(st,g.name))}" target="_blank" rel="noopener noreferrer sponsored">${esc(st)}</a>`).join('')}</div>`;}
+function cardHTML(g){const s=verdictOf(g);const status=g.screeningStatus||'unreviewed';const why=s.reasons[0]||s.warnings[0]||'Awaiting content review.';return`<article class="game-card status-${status}" data-slug="${esc(g.slug)}"><div class="card-meta"><span class="status-dot"></span><span>${{halal:'Screened',caution:'Caution',haram:'Avoid',unreviewed:'Unreviewed'}[status]||'Unreviewed'}</span><span class="score">${Number.isFinite(s.score)?s.score+'/100':'Pending'}</span></div><h3>${esc(g.name)}</h3>${renderTags(g)}<p>${esc(why)}</p><div class="card-footer"><button class="details-button" data-game-slug="${esc(g.slug)}">View details</button>${renderStoreLinks(g)}</div></article>`;}
+function currentSet(){let set=STATE.all.slice();if(STATE.query){const q=STATE.query.toLowerCase();set=set.filter(g=>g.name.toLowerCase().includes(q));}if(STATE.verdict!=='all')set=set.filter(g=>verdictOf(g).verdict===STATE.verdict);if(STATE.genre)set=set.filter(g=>(g.genres||[]).some(x=>x.toLowerCase()===STATE.genre.toLowerCase()));if(STATE.sort==='score-desc')set.sort((a,b)=>verdictOf(b).score-verdictOf(a).score);else if(STATE.sort==='score-asc')set.sort((a,b)=>verdictOf(a).score-verdictOf(b).score);else if(STATE.sort==='name')set.sort((a,b)=>a.name.localeCompare(b.name));return set;}
+function applyFilters(){const set=currentSet();const box=$('#results');box.className='grid'+(STATE.view==='list'?' list':'');if(!set.length){box.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">No games found</div><div>Try a different search, or clear the filters.</div></div>`;$('#result-meta').textContent='';document.body.removeAttribute('data-mood');return;}box.innerHTML=set.map(cardHTML).join('');$('#result-meta').textContent=`${set.length} game${set.length===1?'':'}${STATE.query?` matching "${STATE.query}"`:''}`;const tally={halal:0,caution:0,haram:0};set.forEach(g=>tally[verdictOf(g).verdict]++);const mood=Object.keys(tally).reduce((a,b)=>tally[a]>=tally[b]?a:b);document.body.setAttribute('data-mood',mood);}
+
+/* ===== GENRES ===== */
+function buildGenres(){const counts={};STATE.all.forEach(g=>(g.genres||[]).forEach(x=>counts[x]=(counts[x]||0)+1));const ordered=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);const row=$('#genres');const shown=STATE.genresExpanded?ordered:ordered.slice(0,6);row.innerHTML=shown.map(g=>`<button class="chip" data-genre="${esc(g)}" aria-pressed="${STATE.genre===g}">${esc(g)}</button>`).join('');if(ordered.length>6){const b=document.createElement('button');b.className='chip chip-toggle';b.textContent=STATE.genresExpanded?'\u2212 Less':`+ ${ordered.length-6} more`;b.addEventListener('click',()=>{STATE.genresExpanded=!STATE.genresExpanded;buildGenres();});row.appendChild(b);}}
+
+/* ===== DETAIL MODAL ===== */
+let lastFocus=null;
+function trapFocus(dlg){const f=dlg.querySelectorAll('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])');if(!f.length)return;const first=f[0],last=f[f.length-1];dlg.addEventListener('keydown',e=>{if(e.key!=='Tab')return;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});}
+function storeUrl(store,name){const map={'Steam':'https://store.steampowered.com/search/?term=','Epic Games':'https://store.epicgames.com/en-US/browse?q=','GOG':'https://www.gog.com/en/games?query=','Nintendo Store':'https://www.nintendo.com/us/search/?q=','PlayStation Store':'https://store.playstation.com/en-us/search/','Xbox Store':'https://www.xbox.com/en-US/Search/Results?q=','Battle.net':'https://us.shop.battle.net/en-us','Minecraft.net':'https://www.minecraft.net/'};const base=map[store];if(base)return base+encodeURIComponent(name);return'https://www.google.com/search?q='+encodeURIComponent(name+' '+store+' buy');}
+function openDetail(slug){const g=STATE.all.find(x=>x.slug===slug);if(!g)return;const s=verdictOf(g);const dlg=$('#detail');lastFocus=document.activeElement;const whyItems=(s.verdict==='halal'?s.reasons:s.reasons.concat([])).map(r=>`<li><span class="mk ${s.verdict==='halal'?'good':s.verdict==='caution'?'warn':'bad'}">${s.verdict==='halal'?'\u2713':'\u2022'}</span><span>${esc(r)}</span></li>`).join('')||'<li><span class="mk good">\u2713</span><span>No notable concerns recorded.</span></li>';const warnItems=(s.warnings||[]).map(w=>`<li><span class="mk warn">\u26a0</span><span>${esc(w)}</span></li>`).join('');const alts=(g.alternatives||[]).map(a=>{const t=STATE.all.find(x=>x.slug===a);return t?`<button class="alt-chip" data-slug="${esc(t.slug)}">${esc(t.name)}</button>`:'';}).join('');const stores=renderStoreLinks(g);const meta=[...(g.genres||[]),...(g.platforms||[])].join(' \u00b7 ');dlg.innerHTML=`<div class="modal"><button class="x" data-close aria-label="Close">&#10005;</button><div class="m-head"><div class="m-emblem ${s.verdict}">${esc(placeholderImage(g.name))}</div><div><h3 class="m-title">${esc(g.name)}</h3><div class="m-sub">${esc(meta)}</div></div></div><div class="m-verdict ${s.verdict}"><span class="vlabel">${VERDICT_LABEL[s.verdict]||'Unreviewed'}</span><span class="ring">${s.score}<small>/100</small></span></div><div class="m-block"><h4>Why this verdict</h4><ul>${whyItems}</ul></div>${warnItems?`<div class="m-block"><h4>What to watch for</h4><ul>${warnItems}</ul></div>`:''}${alts&&s.verdict!=='halal'?`<div class="m-block"><h4>Safer alternatives</h4><div class="alts">${alts}</div></div>`:''}<div class="m-block"><h4>Where to buy</h4>${stores}</div><div class="m-foot"><span class="m-sub">${g.screeningStatus==='community-reviewed'?'Community curated':'Auto-screened'}</span><button class="report-btn" data-report="${esc(g.slug)}">Report this verdict</button></div></div>`;dlg.showModal();trapFocus(dlg);dlg.querySelector('.x').focus();}
+
+/* ===== SEARCH ===== */
+const CONFIG={API_BASE:'/api/games'};
+let searchT;
+function normalizeApi(results){return(results||[]).map(r=>({id:r.id,name:r.name,slug:r.slug||String(r.name||'').toLowerCase().replace(/\s+/g,'-'),genres:(r.genres||[]).map(x=>x.name||x),platforms:(r.platforms||[]).map(p=>(p.platform&&p.platform.name)||p.name||p).slice(0,3),description:r.description_raw||r.description||'',tags:(r.tags||[]).map(t=>t.name||t),esrb:(r.esrb_rating&&r.esrb_rating.name)||'',stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean),screeningStatus:'unreviewed'}));}
+async function runSearch(q){STATE.query=q.trim();if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));const cached=cacheGet(STATE.query.toLowerCase());if(cached){mergeResults(local,cached);return;}$('#results').className='grid';$('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');try{const res=await fetch(`${CONFIG.API_BASE}?search=${encodeURIComponent(STATE.query)}&page_size=20`);if(!res.ok)throw new Error('bad status');const data=await res.json();const api=normalizeApi(data.results);cacheSet(STATE.query.toLowerCase(),api);mergeResults(local,api);}catch(err){if(local.length){mergeResults(local,[]);}else{STATE.all=[];applyFilters();showToast('Live search unavailable. Showing offline results.');}}}
+function mergeResults(local,api){const seen=new Set(local.map(g=>g.slug));const merged=local.concat(api.filter(g=>!seen.has(g.slug)));STATE.all=merged;applyFilters();}
+
+/* ===== VOTING ===== */
+function getVotes(){try{return JSON.parse(localStorage.getItem('hg_votes')||'{}')}catch{return{}}}
+function setVotes(v){try{localStorage.setItem('hg_votes',JSON.stringify(v))}catch{}}
+function voteGame(gid,dir){const v=getVotes(),k=''+gid;if(!v[k])v[k]={up:0,dn:0,mv:0};const x=v[k];if(x.mv===dir){x[dir>0?'up':'dn']--;x.mv=0}else{if(x.mv!==0)x[x.mv>0?'up':'dn']--;x[dir>0?'up':'dn']++;x.mv=dir}setVotes(v);document.querySelectorAll('[data-game-id="'+gid+'"]').forEach(el=>{const u=el.querySelector('.vu'),d=el.querySelector('.vd');if(u){u.textContent='\u25B2 '+(v[k].up||0);u.className='vote-btn vu'+(v[k].mv===1?' voted-up':'')}if(d){d.textContent='\u25BC '+(v[k].dn||0);d.className='vote-btn vd'+(v[k].mv===-1?' voted-down':'')}})}
+
+/* ===== STEAM LIBRARY ===== */
+function normalizeTitle(v){return String(v||'').toLowerCase().replace(/[TM:!?'".,\-]/g,' ').replace(/\s+/g,' ').trim();}
+function matchSteamGame(steamGame){const title=normalizeTitle(steamGame.name);return STATE.seed.find(g=>g.steamAppId&&Number(g.steamAppId)===Number(steamGame.appid))||STATE.seed.find(g=>normalizeTitle(g.name)===title);}
+function renderSteamResults(ownedGames){const groups={halal:[],caution:[],haram:[],unknown:[]};ownedGames.forEach(owned=>{const game=matchSteamGame(owned);if(!game||game.screeningStatus!=='community-reviewed'){groups.unknown.push(owned);}else{groups[game.verdict]?.push(game);}});$('#steam-results').innerHTML=`<div class="steam-summary"><strong>${groups.halal.length}</strong> screened halal <strong>${groups.caution.length}</strong> caution <strong>${groups.haram.length}</strong> avoid <strong>${groups.unknown.length}</strong> needs review</div><h3 style="color:var(--heading);margin:16px 0 8px">Screened halal games</h3><div class="grid">${groups.halal.map(renderGameCard).join('')||'<p style="color:var(--muted)">No matches yet.</p>'}</div><h3 style="color:var(--heading);margin:16px 0 8px">Not yet reviewed</h3><div class="steam-unknown">${groups.unknown.map(g=>`<span class="tag tag-platform">${esc(g.name)}</span>`).join('')||'<p style="color:var(--muted)">Everything matched.</p>'}</div>`;}
+
 /* ===== INIT ===== */
-async function loadSeed(){
-  try{
-    const res=await fetch('games.json',{cache:'force-cache'});
-    if(res.ok){const data=await res.json();if(Array.isArray(data)&&data.length)return data;}
-  }catch(e){}
-  return INLINE_FALLBACK;
-}
-async function init(){
-  STATE.seed=await loadSeed();
-  STATE.all=STATE.seed.slice();
-  buildGenres();applyFilters();
-  setTimeout(()=>$('#loader').classList.add('hide'),200);
-}
+async function loadSeed(){try{const res=await fetch('games.json',{cache:'force-cache'});if(res.ok){const data=await res.json();if(Array.isArray(data)&&data.length)return data;}}catch(e){}return INLINE_FALLBACK;}
+async function init(){STATE.seed=await loadSeed();STATE.all=STATE.seed.slice();buildGenres();applyFilters();setTimeout(()=>$('#loader').classList.add('hide'),200);}
 
 /* ===== EVENTS ===== */
 $('#search').addEventListener('input',e=>{clearTimeout(searchT);const v=e.target.value;searchT=setTimeout(()=>runSearch(v),320);});
 $('#sort').addEventListener('change',e=>{STATE.sort=e.target.value;applyFilters();});
-$$('.vtab').forEach(b=>b.addEventListener('click',()=>{
-  STATE.verdict=b.dataset.v;
-  $$('.vtab').forEach(x=>x.setAttribute('aria-pressed',x===b));
-  applyFilters();
-}));
+$$('.vtab').forEach(b=>b.addEventListener('click',()=>{STATE.verdict=b.dataset.v;$$('.vtab').forEach(x=>x.setAttribute('aria-pressed',x===b));applyFilters();}));
 $('#view-grid').addEventListener('click',()=>{STATE.view='grid';$('#view-grid').setAttribute('aria-pressed','true');$('#view-list').setAttribute('aria-pressed','false');applyFilters();});
 $('#view-list').addEventListener('click',()=>{STATE.view='list';$('#view-list').setAttribute('aria-pressed','true');$('#view-grid').setAttribute('aria-pressed','false');applyFilters();});
 $('#genres').addEventListener('click',e=>{const c=e.target.closest('.chip[data-genre]');if(!c)return;const g=c.dataset.genre;STATE.genre=STATE.genre===g?null:g;buildGenres();applyFilters();});
-$('#results').addEventListener('click',e=>{const c=e.target.closest('.gcard');if(c)openDetail(c.dataset.slug);});
+$('#results').addEventListener('click',e=>{const c=e.target.closest('.details-button');if(c){openDetail(c.dataset.gameSlug);return;}const card=e.target.closest('.game-card');if(card)openDetail(card.dataset.slug);});
 
 /* detail modal delegated actions */
-$('#detail').addEventListener('click',e=>{
-  if(e.target.dataset.close!==undefined||e.target===e.currentTarget){$('#detail').close();return;}
-  const alt=e.target.closest('.alt-chip');if(alt){$('#detail').close();openDetail(alt.dataset.slug);return;}
-  const rep=e.target.closest('[data-report]');if(rep){$('#detail').dataset.reporting=rep.dataset.report;$('#report').showModal();trapFocus($('#report'));}
-});
+$('#detail').addEventListener('click',e=>{if(e.target.dataset.close!==undefined||e.target===e.currentTarget){$('#detail').close();return;}const alt=e.target.closest('.alt-chip');if(alt){$('#detail').close();openDetail(alt.dataset.slug);return;}const rep=e.target.closest('[data-report]');if(rep){$('#detail').dataset.reporting=rep.dataset.report;$('#report').showModal();trapFocus($('#report'));}});
 $('#detail').addEventListener('close',()=>{if(lastFocus)lastFocus.focus();});
 
 /* report modal */
 $('#report').addEventListener('click',e=>{if(e.target.dataset.close!==undefined||e.target===e.currentTarget)$('#report').close();});
-$('#report-form').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const reason=$('#report-reason').value.trim();const slug=$('#detail').dataset.reporting||'';
-  if(!reason)return;
-  $('#report').close();$('#report-form').reset();
-  showToast('Thanks. Your report was submitted for review.');
-  try{await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,reason,ts:Date.now()})});}catch(err){/* optimistic, silent */}
-});
+$('#report-form')?.addEventListener('submit',async e=>{e.preventDefault();const reason=$('#report-reason').value.trim();const slug=$('#detail').dataset.reporting||'';if(!reason)return;$('#report').close();$('#report-form').reset();showToast('Thanks. Your report was submitted for review.');try{await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,reason,ts:Date.now()})});}catch(err){}});
+
+/* steam library */
+$('#steam-form')?.addEventListener('submit',async event=>{event.preventDefault();$('#steam-results').innerHTML='<p style="color:var(--muted)">Reading public Steam library...</p>';try{const response=await fetch(`/api/steam-library?profile=${encodeURIComponent($('#steam-profile').value.trim())}`);const payload=await response.json();if(!response.ok)throw new Error(payload.error||'Steam import failed.');renderSteamResults(payload.games);}catch(error){$('#steam-results').innerHTML=`<p style="color:var(--haram)">${esc(error.message)}</p>`;}});
 
 /* drawer */
 function openDrawer(o){$('#drawer').classList.toggle('open',o);$('#overlay').classList.toggle('open',o);$('#burger').setAttribute('aria-expanded',o);$('#drawer').setAttribute('aria-hidden',!o);}
@@ -748,13 +666,23 @@ $('#overlay').addEventListener('click',()=>openDrawer(false));
 $$('.drawer nav button').forEach(b=>b.addEventListener('click',()=>{openDrawer(false);const el=document.getElementById(b.dataset.scroll);if(el)el.scrollIntoView({behavior:'smooth'});}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')openDrawer(false);});
 
-/* admin panel trigger (?admin=1) */
-if(new URLSearchParams(location.search).get('admin')==='1'){
-  fetch('/api/reports',{headers:{'X-Admin-Request':'1'}}).then(r=>{
-    if(r.status===403)showToast('Admin access requires a valid token.');
-    else if(r.ok)showToast('Admin: reports endpoint reachable.');
-  }).catch(()=>{});
-}
+/* admin */
+if(new URLSearchParams(location.search).get('admin')==='1'){fetch('/api/reports',{headers:{'X-Admin-Request':'1'}}).then(r=>{if(r.status===403)showToast('Admin access requires a valid token.');else if(r.ok)showToast('Admin: reports endpoint reachable.');}).catch(()=>{});}
+
+/* report modal */
+$('#report').addEventListener('click',e=>{if(e.target.dataset.close!==undefined||e.target===e.currentTarget)$('#report').close();});
+$('#report-form')?.addEventListener('submit',async e=>{e.preventDefault();const reason=$('#report-reason').value.trim();const slug=$('#detail').dataset.reporting||'';if(!reason)return;$('#report').close();$('#report-form').reset();showToast('Thanks. Your report was submitted for review.');try{await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,reason,ts:Date.now()})});}catch(err){}});
+
+/* drawer */
+function openDrawer(o){$('#drawer').classList.toggle('open',o);$('#overlay').classList.toggle('open',o);$('#burger').setAttribute('aria-expanded',o);$('#drawer').setAttribute('aria-hidden',!o);}
+$('#burger').addEventListener('click',()=>openDrawer(true));
+$('#drawer-close').addEventListener('click',()=>openDrawer(false));
+$('#overlay').addEventListener('click',()=>openDrawer(false));
+$$('.drawer nav button').forEach(b=>b.addEventListener('click',()=>{openDrawer(false);const el=document.getElementById(b.dataset.scroll);if(el)el.scrollIntoView({behavior:'smooth'});}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')openDrawer(false);});
+
+/* admin */
+if(new URLSearchParams(location.search).get('admin')==='1'){fetch('/api/reports',{headers:{'X-Admin-Request':'1'}}).then(r=>{if(r.status===403)showToast('Admin access requires a valid token.');else if(r.ok)showToast('Admin: reports endpoint reachable.');}).catch(()=>{});}
 
 init();
 </script>
@@ -762,6 +690,7 @@ init();
 </html>
 
 </script>
+
 
 </body>
 </html>
