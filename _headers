@@ -3,9 +3,11 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
   X-XSS-Protection: 0
   Vary: Accept-Language
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-ZzWoOpMVzL+CoLuV8l8bMaXAaqqLF6+7OqFVK55eXiw='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.rawg.io https://media.rawg.io https://api.rawg.io; connect-src 'self' https://api.rawg.io; object-src 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.rawg.io https://media.rawg.io https://api.rawg.io; connect-src 'self' https://api.rawg.io; object-src 'none'; base-uri 'self'; form-action 'self'
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
