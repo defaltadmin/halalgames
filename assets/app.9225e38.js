@@ -210,4 +210,6 @@ $('#save-catalog')?.addEventListener('click',async()=>{const button=$('#save-cat
 $('#admin-search')?.addEventListener('input',renderAdminQueue);
 $('#admin-verdict-filter')?.addEventListener('change',renderAdminQueue);
 
+/* Theme toggle */
+(function(){const t=document.getElementById('theme-toggle');if(!t)return;const s=localStorage.getItem('hg-theme');const d=window.matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.setAttribute('data-theme',s||(d?'dark':'light'));t.addEventListener('click',function(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('hg-theme',n);});})();
 init();

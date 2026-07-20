@@ -526,6 +526,58 @@ dialog::backdrop { background: oklch(20% 0.012 250 / 0.6); backdrop-filter: blur
   .brand-dot { animation: none; }
 }
 
+/* Dark mode — preserves multi-accent palette */
+[data-theme="dark"] {
+  --color-paper: oklch(16% 0.012 250);
+  --color-paper-2: oklch(20% 0.014 250);
+  --color-paper-3: oklch(24% 0.014 250);
+  --color-ink: oklch(92% 0.008 95);
+  --color-ink-2: oklch(78% 0.008 95);
+  --color-ink-3: oklch(58% 0.010 250);
+  --color-accent: oklch(82% 0.18 95);
+  --color-accent-deep: oklch(90% 0.18 95);
+  --color-accent-2: oklch(72% 0.18 235);
+  --color-accent-2-deep: oklch(80% 0.18 235);
+  --color-accent-3: oklch(72% 0.24 18);
+  --color-mint: oklch(76% 0.16 150);
+  --color-lavender: oklch(70% 0.16 305);
+  --color-focus: oklch(72% 0.18 235);
+  --color-rule: oklch(24% 0.014 250);
+  --color-halal: oklch(76% 0.18 155);
+  --color-caution: oklch(85% 0.16 85);
+  --color-haram: oklch(70% 0.22 25);
+  --shadow-card: 0 8px 24px -8px oklch(0% 0 0 / 0.4);
+  --shadow-card-hover: 0 12px 32px -8px oklch(0% 0 0 / 0.5);
+}
+[data-theme="dark"] body { background: oklch(14% 0.012 250); }
+[data-theme="dark"] .nav { background: oklch(16% 0.012 250 / 0.9); }
+[data-theme="dark"] dialog::backdrop { background: oklch(10% 0.012 250 / 0.7); }
+[data-theme="dark"] .modal { background: oklch(18% 0.012 250); }
+[data-theme="dark"] .hero-badge { background: oklch(20% 0.014 250); }
+[data-theme="dark"] .method .item { background: oklch(18% 0.012 250); }
+[data-theme="dark"] .contact-note { background: oklch(20% 0.014 250); }
+[data-theme="dark"] .reslist a { background: oklch(18% 0.012 250); }
+[data-theme="dark"] .reslist a:hover { background: oklch(22% 0.014 250); }
+[data-theme="dark"] .game-card { background: oklch(18% 0.012 250); }
+[data-theme="dark"] .game-card:hover { background: oklch(22% 0.014 250); }
+[data-theme="dark"] .catalog-toolbar { background: oklch(20% 0.014 250); }
+[data-theme="dark"] .steam-panel { background: oklch(20% 0.014 250); }
+[data-theme="dark"] #search { background: oklch(18% 0.012 250); border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] #sort { background: oklch(18% 0.012 250); border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] .details-button { background: oklch(20% 0.014 250); border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] .alt-chip { background: oklch(20% 0.014 250); border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] .drawer { background: oklch(18% 0.012 250); }
+[data-theme="dark"] .overlay { background: oklch(0% 0 0 / 0.6); }
+[data-theme="dark"] .vtab { background: oklch(20% 0.014 250); }
+[data-theme="dark"] .chip { background: oklch(20% 0.014 250); border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] .view-toggle { background: oklch(20% 0.014 250); border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] .verdict-tabs { background: oklch(20% 0.014 250); border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] .btn { --btn-cast: oklch(0% 0 0 / 0.3); }
+[data-theme="dark"] .report-btn { border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] .m-block h4 { color: var(--color-ink-2); }
+[data-theme="dark"] .tag-platform { background: oklch(20% 0.014 250); border-color: oklch(24% 0.014 250); }
+[data-theme="dark"] .tag-genre { background: oklch(72% 0.18 235 / 0.1); border-color: oklch(72% 0.18 235 / 0.3); }
+
 /* ===== UI/UX POLISH (frontend-design + ui-ux-pro-max) ===== */
 
 /* Smooth section reveal — one orchestrated entrance */
@@ -625,6 +677,40 @@ dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
   :root { --text-display: clamp(1.75rem, 6vw, 2.5rem); }
   .hero-text p { font-size: var(--text-base); }
 }
+
+/* Theme toggle button */
+.theme-toggle {
+  background: var(--color-paper-2); border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill); width: 36px; height: 36px;
+  display: grid; place-items: center; cursor: pointer;
+  transition: background var(--dur-short), border-color var(--dur-short), transform var(--dur-short);
+}
+.theme-toggle:hover { background: var(--color-paper-3); border-color: var(--color-ink-3); transform: scale(1.05); }
+.theme-toggle:active { transform: scale(0.95); }
+.toggle-icon { font-size: 1.1rem; line-height: 1; }
+[data-theme="dark"] .toggle-icon::after { content: '\2600'; }
+[data-theme="light"] .toggle-icon::after,
+:root:not([data-theme]) .toggle-icon::after { content: '\263E'; }
+
+/* Theme toggle button */
+.theme-toggle {
+  background: var(--color-paper-2); border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill); width: 36px; height: 36px;
+  display: grid; place-items: center; cursor: pointer;
+  transition: background var(--dur-short), border-color var(--dur-short), transform var(--dur-short);
+}
+.theme-toggle:hover { background: var(--color-paper-3); border-color: var(--color-ink-3); transform: scale(1.05); }
+.theme-toggle:active { transform: scale(0.95); }
+.toggle-icon { font-size: 1.1rem; line-height: 1; }
+[data-theme="dark"] .toggle-icon::after { content: '\2600'; }
+[data-theme="light"] .toggle-icon::after,
+:root:not([data-theme]) .toggle-icon::after { content: '\263E'; }
+
+/* Theme toggle button */
+.theme-toggle { background: var(--color-paper-2); border: 1px solid var(--color-rule); border-radius: var(--radius-pill); width: 36px; height: 36px; display: grid; place-items: center; cursor: pointer; transition: background var(--dur-short), border-color var(--dur-short), transform var(--dur-short); }
+.theme-toggle:hover { background: var(--color-paper-3); border-color: var(--color-ink-3); transform: scale(1.05); }
+.theme-toggle:active { transform: scale(0.95); }
+.toggle-icon { font-size: 1.1rem; line-height: 1; }
 </style>
 </head>
 <body>
@@ -637,7 +723,8 @@ dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
     <div class="nav-links">
       <a href="#about">How it works</a>
       <a href="#resources">Resources</a>
-    </div>
+    
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"><span class="toggle-icon">&#9790;</span></button></div>
     <button class="burger-btn" id="burger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
   </div>
 </nav>
@@ -764,6 +851,6 @@ dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="/assets/app.7035cc8.js" defer></script>
+<script src="/assets/app.9225e38.js" defer></script>
 </body>
 </html>
