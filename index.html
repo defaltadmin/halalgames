@@ -525,6 +525,106 @@ dialog::backdrop { background: oklch(20% 0.012 250 / 0.6); backdrop-filter: blur
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   .brand-dot { animation: none; }
 }
+
+/* ===== UI/UX POLISH (frontend-design + ui-ux-pro-max) ===== */
+
+/* Smooth section reveal — one orchestrated entrance */
+.hero { animation: fadeSlideUp 600ms var(--ease-out) both; }
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Card color-shift per Hum spec — each card gets a different accent tint */
+.game-card:nth-child(3n+1) { --card-tint: oklch(86% 0.18 95 / 0.04); }
+.game-card:nth-child(3n+2) { --card-tint: oklch(66% 0.18 235 / 0.03); }
+.game-card:nth-child(3n) { --card-tint: oklch(80% 0.16 150 / 0.03); }
+.game-card { background: var(--card-tint, var(--color-paper)); }
+.game-card:hover { background: color-mix(in oklch, var(--card-tint, var(--color-paper)) 60%, var(--color-paper-2)); }
+
+/* Cursor pointer on all interactive elements */
+.game-card, .details-button, .store-link, .btn, .vtab, .chip, .vbtn, .report-btn, .alt-chip {
+  cursor: pointer;
+}
+
+/* Touch targets — 44px minimum */
+.vtab, .vbtn, .chip, .details-button, .store-link { min-height: 44px; min-width: 44px; }
+#sort { min-height: 44px; }
+
+/* Better focus-visible — Hum accent ring */
+:focus-visible { outline: 3px solid var(--color-accent-2); outline-offset: 3px; border-radius: 8px; }
+.game-card:focus-visible { outline: 3px solid var(--color-accent-2); outline-offset: 2px; }
+#search:focus-visible { box-shadow: 0 0 0 4px oklch(66% 0.18 235 / 0.2); }
+
+/* Improved skeleton shimmer */
+.skeleton { background: linear-gradient(110deg, var(--color-paper-2) 8%, var(--color-paper-3) 18%, var(--color-paper-2) 33%); background-size: 200% 100%; animation: shimmer 1.5s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Empty state — friendly with a character moment */
+.empty { padding: var(--space-3xl) var(--space-md); }
+.empty .big { font-size: var(--text-2xl); margin-bottom: var(--space-xs); }
+.empty .empty-dot { display: inline-block; width: 48px; height: 48px; border-radius: 50%; background: var(--color-accent); margin-bottom: var(--space-md); animation: pulse-dot 4s ease-in-out infinite; }
+
+/* Card detail button hover — accent sweep */
+.details-button { position: relative; overflow: hidden; }
+.details-button::after {
+  content: ''; position: absolute; inset: 0; background: var(--color-accent-2);
+  opacity: 0; transition: opacity var(--dur-short); z-index: -1; border-radius: inherit;
+}
+.details-button:hover::after { opacity: 0.08; }
+
+/* Store link hover — lift */
+.store-link:hover { transform: translateY(-1px); transition: transform var(--dur-short), background var(--dur-short); }
+
+/* Smooth page scroll */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* Better toast — slide up */
+.toast.show { animation: toastIn 300ms var(--ease-spring) both; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(-4px); } }
+
+/* Verdict tab active state — accent color */
+.vtab[data-v="all"][aria-pressed="true"] { background: var(--color-ink); }
+.vtab[data-v="halal"][aria-pressed="true"] { background: var(--color-halal); }
+.vtab[data-v="caution"][aria-pressed="true"] { background: var(--color-caution); color: var(--color-ink); }
+.vtab[data-v="haram"][aria-pressed="true"] { background: var(--color-haram); }
+
+/* Genre chip active — accent underline */
+.chip[aria-pressed="true"] { position: relative; }
+.chip[aria-pressed="true"]::after {
+  content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+  width: 16px; height: 2px; border-radius: 1px; background: var(--color-accent-deep);
+}
+
+/* Modal backdrop blur */
+dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
+
+/* Better card shadow on hover — layered */
+.game-card:hover { box-shadow: 0 4px 8px -2px oklch(20% 0.012 250 / 0.06), 0 16px 40px -12px oklch(20% 0.012 250 / 0.14); }
+
+/* Method cards — subtle accent border on hover */
+.method .item:hover { border-color: oklch(66% 0.18 235 / 0.2); }
+
+/* Resource links — accent arrow on hover */
+.reslist a::after { content: '\2192'; margin-left: auto; opacity: 0; transition: opacity var(--dur-short), transform var(--dur-short); transform: translateX(-4px); color: var(--color-accent-2); }
+.reslist a:hover::after { opacity: 1; transform: translateX(0); }
+
+/* Brand dot — star burst on click */
+.brand:active .brand-dot { animation: starPulse 400ms ease-out; }
+@keyframes starPulse { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+/* Better responsive touch */
+@media (max-width: 768px) {
+  .hero { padding: var(--space-xl) 0 var(--space-md); }
+  .controls { gap: var(--space-xs); }
+  .verdict-tabs { width: 100%; justify-content: space-between; }
+  .grid { gap: var(--space-sm); }
+  .game-card { padding: var(--space-sm); min-height: 180px; }
+}
+
+@media (max-width: 375px) {
+  :root { --text-display: clamp(1.75rem, 6vw, 2.5rem); }
+  .hero-text p { font-size: var(--text-base); }
+}
 </style>
 </head>
 <body>
