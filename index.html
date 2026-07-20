@@ -682,7 +682,7 @@ dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
       </div>
     </div>
     <div class="genre-row" id="genres" role="group" aria-label="Filter by genre"></div>
-    <div class="result-meta" id="result-meta" aria-live="polite"></div>
+    <h2 style="font-size:var(--text-xl);margin-bottom:var(--space-sm)">Browse games</h2><div class="result-meta" id="result-meta" aria-live="polite"></div>
     <div class="grid" id="results"></div>
   </section>
 
@@ -734,7 +734,7 @@ dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
 </footer>
 
 <div class="overlay" id="overlay"></div>
-<aside class="drawer" id="drawer" aria-hidden="true">
+<aside class="drawer" id="drawer" aria-hidden="true" inert>
   <button class="close" id="drawer-close" aria-label="Close menu">&#10005;</button>
   <nav>
     <button data-scroll="about">How it works</button>
