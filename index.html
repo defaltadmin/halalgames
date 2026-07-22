@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">`n<meta name="theme-color" content="#f5f0e8" media="(prefers-color-scheme: light)">`n<meta name="theme-color" content="#1a1e2e" media="(prefers-color-scheme: dark)">
 <title>HalalGames — Know why before you play</title>
 <meta name="description" content="Search any video game for its Islamic content rating. Understand why a game is halal, caution, or best avoided.">
 <link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link rel="preload" href="/assets/app.9225e38.js" as="script">
@@ -746,9 +746,28 @@ img.loaded { opacity: 1; }
   [data-theme="dark"] .search-wrap { background: oklch(14% 0.012 250); }
 }
 
-/* Phase 8: Performance — will-change for animated elements */
-.game-card { will-change: transform; }
-.btn { will-change: transform, box-shadow; }
+/* Phase 8: Performance — contain for layout isolation */
+.game-card { contain: layout style; }
+.btn { contain: layout style; }
+/* Phase 5: Skeleton cards matching real card shape */
+.skeleton{display:flex;flex-direction:column;padding:var(--space-md);background:var(--color-paper-2);border:1px solid var(--color-rule);border-radius:var(--radius-card);min-height:220px}
+.skel-meta{height:12px;width:60%;background:var(--color-paper-3);border-radius:6px;margin-bottom:var(--space-sm)}
+.skel-title{height:20px;width:80%;background:var(--color-paper-3);border-radius:6px;margin-bottom:var(--space-xs)}
+.skel-tags{display:flex;gap:6px;margin-bottom:var(--space-sm)}
+.skel-tags::before,.skel-tags::after{content:'';height:22px;width:60px;background:var(--color-paper-3);border-radius:999px}
+.skel-text{height:14px;width:100%;background:var(--color-paper-3);border-radius:6px;margin-bottom:4px}
+.skel-text:last-of-type{width:70%}
+.skel-footer{margin-top:auto;display:flex;justify-content:space-between;padding-top:var(--space-sm)}
+.skel-footer::before{content:'';height:32px;width:100px;background:var(--color-paper-3);border-radius:999px}
+.skel-footer::after{content:'';height:28px;width:80px;background:var(--color-paper-3);border-radius:999px}
+
+/* Phase 2: prefers-reduced-motion for all interactive elements */
+@media(prefers-reduced-motion:reduce){
+  .game-card,.btn,.theme-toggle,.vtab,.chip,.details-button,.store-link,.alt-chip,.reslist a,.method .item{transition:none!important}
+  .game-card:hover,.method .item:hover{transform:none}
+  .brand-dot{animation:none}
+}
+
 </style>
 </head>
 <body>
@@ -775,7 +794,7 @@ img.loaded { opacity: 1; }
       <div class="hero-text">
         <h1>Know <em>why</em> before you play.</h1>
         <p>Search any game for its Islamic content rating. Not just a score, but the reasons behind it: faith, ethics, modesty, and violence. Trusted by Muslim gamers worldwide.</p>
-        <div class="hero-badge"><span class="dot" aria-hidden="true"></span>30 screened games and growing</div><div class="hero-badge" style="margin-top:var(--space-xs)"><span class="dot" aria-hidden="true" style="background:var(--color-accent-2)"></span>Powered by RAWG database of 500,000+ games</div>
+        <div class="hero-badge"><span class="dot" aria-hidden="true"></span>30 screened games and growing</div><div class="hero-badge" style="margin-top:var(--space-xs)"><span class="dot" aria-hidden="true" style="background:var(--color-accent-2)"></span>Powered by RAWG database of 500,000+ games</div><div class="hero-badge" style="margin-top:var(--space-xs)"><span class="dot" aria-hidden="true" style="background:var(--color-halal)"></span>Reviewed by community volunteers</div>
         <div class="social-proof" aria-label="Community statistics">
           <div class="proof-item"><strong>4</strong><span>verdict categories</span></div>
           <div class="proof-item"><strong>100%</strong><span>free, no tracking</span></div>
