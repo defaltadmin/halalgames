@@ -15,7 +15,7 @@ A free, open-access Islamic content screener for video games. Search any game an
 
 ## Tech Stack
 
-- **HTML + external JS** — single HTML file with `/assets/app.7035cc8.js` (extracted runtime)
+- **HTML + external JS** — single HTML file with `/assets/app.{hash}.js (versioned, renamed on each deploy)` (extracted runtime)
 - **CSS custom properties** — Steam-inspired palette with glass-surface effects, no framework
 - **Cloudflare Pages** — hosting, serverless Functions, KV storage
 - **RAWG API** proxied through `/api/games` (key stored server-side, never exposed)
@@ -27,7 +27,7 @@ A free, open-access Islamic content screener for video games. Search any game an
 halalgames/
 ├── index.html                    # Application shell (HTML + CSS only)
 ├── assets/
-│   └── app.7035cc8.js           # Runtime JS (versioned for cache busting)
+│   └── app.{hash}.js (versioned, renamed on each deploy)           # Runtime JS (versioned for cache busting)
 ├── games.json                    # Curated seed data (30 games)
 ├── functions/
 │   └── api/

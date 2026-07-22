@@ -1,13 +1,10 @@
 const JSON_HEADERS = {
   'Content-Type': 'application/json; charset=utf-8',
-  'Cache-Control': 'no-store'
+  'Cache-Control': 'public, max-age=60, stale-while-revalidate=300'
 };
 
 function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: JSON_HEADERS
-  });
+  return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 }
 
 function normalizeGame(game) {
@@ -24,47 +21,33 @@ function normalizeGame(game) {
     reviewConfidence: game.reviewConfidence || 'none',
     lastReviewedAt: game.lastReviewedAt || null,
     filters: {
-      noCombat: null,
-      noGambling: null,
-      noNudity: null,
-      noMagic: null,
-      music: 'unknown',
-      singleplayer: null,
-      coOp: null,
+      noCombat: null, noGambling: null, noNudity: null, noMagic: null,
+      music: 'unknown', singleplayer: null, coOp: null,
       ...(game.filters || {})
     }
   };
 }
 
-const FALLBACK_URL = 'https://halalgames.mscarabia.com/games.json';
-
-export async function onRequestGet({ env }) {
-  const catalog = env.CATALOG_KV
-    ? await env.CATALOG_KV.get('catalog', { type: 'json' }).catch(() => null)
-    : null;
+// F6 FIX: Use request origin instead of hardcoded URL
+export async function onRequestGet({ request, env }) {
+  let catalog = null;
+  if (env.CATALOG_KV) {
+    try { catalog = await env.CATALOG_KV.get('catalog', { type: 'json' }); } catch {}
+  }
 
   if (Array.isArray(catalog) && catalog.length > 0) {
-    return json({
-      version: 1,
-      games: catalog.map(normalizeGame),
-      source: 'catalog-kv'
-    });
+    return json({ version: 1, games: catalog.map(normalizeGame), source: 'catalog-kv' });
   }
 
-  // KV empty or unavailable — fall back to games.json
+  // F9 FIX: Use origin-relative URL instead of hardcoded production URL
+  const origin = new URL(request.url).origin;
   try {
-    const fallback = await fetch(FALLBACK_URL);
+    const fallback = await fetch(`${origin}/games.json`);
     if (fallback.ok) {
       const games = await fallback.json();
-      return json({
-        version: 1,
-        games: Array.isArray(games) ? games.map(normalizeGame) : [],
-        source: 'games-json'
-      });
+      return json({ version: 1, games: Array.isArray(games) ? games.map(normalizeGame) : [], source: 'games-json' });
     }
-  } catch {
-    // fetch failed
-  }
+  } catch {}
 
   return json({ version: 1, games: [], source: 'empty' }, 200);
 }

@@ -1,3 +1,5 @@
+import { allowAttempt } from './_utils.js';
+
 const headers = {
   'Content-Type': 'application/json; charset=utf-8',
   'Cache-Control': 'no-store'
@@ -32,14 +34,19 @@ export async function onRequestGet({ request, env }) {
   if (!profile || profile.length > 240) return json({ error: 'Enter a valid Steam profile URL.' }, 400);
   if (!env.STEAM_API_KEY) return json({ error: 'Steam integration is not configured.' }, 503);
 
+  // F5 FIX: Rate limit per-IP to protect Steam quota
+  if (!(await allowAttempt(request, env, 'steam-scan', 20, 60))) {
+    return json({ error: 'Too many requests. Try again later.' }, 429);
+  }
+
   const parsed = parseProfile(profile);
-  if (!parsed) return json({ error: 'Invalid Steam profile URL. Use steamcommunity.com/id/yourname or /profiles/12345678901234567.' }, 422);
+  if (!parsed) return json({ error: 'Invalid Steam profile URL.' }, 422);
 
   try {
     let steamid = parsed.steamid;
     if (!steamid) {
       const resolved = await steamGet('ISteamUser/ResolveVanityURL/v0001/', { vanityurl: parsed.vanity }, env.STEAM_API_KEY);
-      if (resolved?.response?.success !== 1) return json({ error: 'Steam profile not found. Make sure the profile is public.' }, 404);
+      if (resolved?.response?.success !== 1) return json({ error: 'Steam profile not found.' }, 404);
       steamid = resolved.response.steamid;
     }
     const owned = await steamGet('IPlayerService/GetOwnedGames/v0001/', { steamid, include_appinfo: 1, include_played_free_games: 1 }, env.STEAM_API_KEY);
@@ -48,6 +55,6 @@ export async function onRequestGet({ request, env }) {
       games: (owned?.response?.games || []).map(g => ({ appid: g.appid, name: g.name, playtimeMinutes: g.playtime_forever || 0 }))
     });
   } catch {
-    return json({ error: 'Steam could not return this library. Make sure the profile and game details are public.' }, 502);
+    return json({ error: 'Steam could not return this library.' }, 502);
   }
 }
