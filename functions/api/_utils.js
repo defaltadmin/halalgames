@@ -1,13 +1,18 @@
 export function timingSafeEqual(a, b) {
   const enc = new TextEncoder();
-  const ba = enc.encode(String(a ?? ''));
-  const bb = enc.encode(String(b ?? ''));
-  if (ba.byteLength !== bb.byteLength) return false;
-  return crypto.subtle.timingSafeEqual(ba, bb);
+  const ua = enc.encode(String(a ?? ''));
+  const sb = enc.encode(String(b ?? ''));
+  const lengthsMatch = ua.byteLength === sb.byteLength;
+  return lengthsMatch
+    ? crypto.subtle.timingSafeEqual(ua, sb)
+    : !crypto.subtle.timingSafeEqual(ua, ua);
 }
 
 export async function allowAttempt(request, env, prefix, limit, ttl) {
-  if (!env.REPORTS_KV) return true;
+  if (!env.REPORTS_KV) {
+    console.warn(`[SECURITY] Rate limiter '${prefix}' disabled: REPORTS_KV not bound`);
+    return true;
+  }
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   const hour = new Date().toISOString().slice(0, 13);
   const key = `${prefix}:${ip}:${hour}`;

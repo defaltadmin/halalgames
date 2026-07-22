@@ -56,12 +56,11 @@ export async function onRequest({ request, env }) {
     return json({ error: 'Catalog KV is not configured.' }, 503);
   }
 
-  // F1 FIX: Rate limit EVERY attempt BEFORE auth check — brute force now bounded to 5/hr
-  if (!(await allowAttempt(request, env, 'admin-login', 5, 3600))) {
-    return json({ error: 'Too many attempts. Try again later.' }, 429);
-  }
-
+  // R1 FIX: Rate limit ONLY failed auth attempts — legitimate admin sessions aren't capped
   if (!isAdmin(request, env)) {
+    if (!(await allowAttempt(request, env, 'admin-login-fail', 5, 3600))) {
+      return json({ error: 'Too many failed attempts. Try again later.' }, 429);
+    }
     return json({ error: 'Unauthorized' }, 403);
   }
 
