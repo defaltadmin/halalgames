@@ -711,23 +711,36 @@ dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
 .theme-toggle:hover { background: var(--color-paper-3); border-color: var(--color-ink-3); transform: scale(1.05); }
 .theme-toggle:active { transform: scale(0.95); }
 .toggle-icon { font-size: 1.1rem; line-height: 1; }
+
+/* Social proof stats bar */
+.social-proof { display: flex; gap: var(--space-lg); margin-top: var(--space-md); }
+.proof-item { display: flex; flex-direction: column; }
+.proof-item strong { font-size: var(--text-xl); color: var(--color-ink); font-weight: 700; }
+.proof-item span { font-size: var(--text-xs); color: var(--color-ink-3); font-weight: 500; }
+@media (max-width: 768px) { .social-proof { gap: var(--space-md); } }
+
+/* Lazy loading for images */
+img[loading="lazy"] { opacity: 0; transition: opacity 300ms; }
+img[loading="lazy"].loaded { opacity: 1; }
 </style>
 </head>
 <body>
 
 <div id="loader"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
-<nav class="nav">
-  <div class="shell nav-inner">
-    <a class="brand" href="#top"><span class="brand-dot" aria-hidden="true"></span>Halal<span>Games</span></a>
-    <div class="nav-links">
-      <a href="#about">How it works</a>
-      <a href="#resources">Resources</a>
+<header>
+  <nav class="nav" aria-label="Main navigation">
+    <div class="shell nav-inner">
+      <a class="brand" href="#top"><span class="brand-dot" aria-hidden="true"></span>Halal<span>Games</span></a>
+      <div class="nav-links">
+        <a href="#about">How it works</a>
+        <a href="#resources">Resources</a>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"><span class="toggle-icon">&#9790;</span></button>
+      <button class="burger-btn" id="burger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
     </div>
-    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"><span class="toggle-icon">&#9790;</span></button>
-    <button class="burger-btn" id="burger" aria-label="Open menu" aria-expanded="false">&#9776;</button>
-  </div>
-</nav>
+  </nav>
+</header>
 
 <main class="shell" id="top">
   <section class="hero">
@@ -736,6 +749,11 @@ dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
         <h1>Know <em>why</em> before you play.</h1>
         <p>Search any game for its Islamic content rating. Not just a score, but the reasons behind it: faith, ethics, modesty, and violence.</p>
         <div class="hero-badge"><span class="dot" aria-hidden="true"></span>30 screened games and growing</div>
+        <div class="social-proof" aria-label="Community statistics">
+          <div class="proof-item"><strong>4</strong><span>verdict categories</span></div>
+          <div class="proof-item"><strong>100%</strong><span>free, no tracking</span></div>
+          <div class="proof-item"><strong>0</strong><span>cookies collected</span></div>
+        </div>
       </div>
       <div class="hero-visual">
         <div class="hero-badge" style="font-size:0.8rem; padding:14px 24px;">
