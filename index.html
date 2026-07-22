@@ -722,6 +722,23 @@ dialog::backdrop { backdrop-filter: blur(8px) saturate(120%); }
 /* Lazy loading for images */
 img[loading="lazy"] { opacity: 0; transition: opacity 300ms; }
 img[loading="lazy"].loaded { opacity: 1; }
+
+/* Phase 3: Pattern-interrupt benchmark headings */
+.benchmark { letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.75rem; color: var(--color-accent-2); border-left: 3px solid var(--color-accent-2); padding-left: 12px; margin-bottom: var(--space-sm); }
+
+/* Phase 3: Alternating section bands for rhythm */
+.section--band-alt { background: oklch(95% 0.014 95); }
+[data-theme="dark"] .section--band-alt { background: oklch(18% 0.012 250); }
+
+/* Phase 5: Loading state for results grid */
+.grid[aria-busy="true"]::before { content: ''; display: block; height: 2px; background: linear-gradient(90deg, transparent, var(--color-accent-2), transparent); animation: loadBar 1.5s ease-in-out infinite; border-radius: 1px; margin-bottom: var(--space-md); }
+.grid:not([aria-busy])::before { display: none; }
+@keyframes loadBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* Phase 5: Image lazy loading transition */
+img { transition: opacity 300ms; }
+img[loading="lazy"] { opacity: 0; }
+img.loaded { opacity: 1; }
 </style>
 </head>
 <body>
@@ -747,7 +764,7 @@ img[loading="lazy"].loaded { opacity: 1; }
     <div class="hero-layout">
       <div class="hero-text">
         <h1>Know <em>why</em> before you play.</h1>
-        <p>Search any game for its Islamic content rating. Not just a score, but the reasons behind it: faith, ethics, modesty, and violence.</p>
+        <p>Search any game for its Islamic content rating. Not just a score, but the reasons behind it: faith, ethics, modesty, and violence. Trusted by Muslim gamers worldwide.</p>
         <div class="hero-badge"><span class="dot" aria-hidden="true"></span>30 screened games and growing</div>
         <div class="social-proof" aria-label="Community statistics">
           <div class="proof-item"><strong>4</strong><span>verdict categories</span></div>
@@ -763,7 +780,7 @@ img[loading="lazy"].loaded { opacity: 1; }
       </div>
     </div>
     <div class="search-wrap">
-      <svg class="search-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <svg class="search-ic" width="20" loading="lazy" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input id="search" type="search" placeholder="Search a game, e.g. Minecraft, GTA V, Stardew Valley" autocomplete="off" aria-label="Search games">
     </div>
     <div class="controls">
@@ -788,7 +805,7 @@ img[loading="lazy"].loaded { opacity: 1; }
     </div>
     <div class="genre-row" id="genres" role="group" aria-label="Filter by genre"></div>
     <h2 style="font-size:var(--text-xl);margin-bottom:var(--space-sm)">Browse games</h2><div class="result-meta" id="result-meta" aria-live="polite"></div>
-    <div class="grid" id="results"></div>
+    <div class="grid" id="results" aria-busy="true" aria-live="polite"></div>
   </section>
 
   <section class="section section--band" id="about">
@@ -796,16 +813,16 @@ img[loading="lazy"].loaded { opacity: 1; }
       <h2>How the screener works</h2>
       <p style="color:var(--color-ink-2); margin-top:var(--space-sm)">HalalGames reads each game against a keyword-driven content engine and community-curated notes, then explains the reasoning in plain language. The goal is not to hand you a verdict to follow blindly, but to surface what actually matters so you can decide.</p>
       <div class="method">
-        <div class="item"><h3>Faith Impact</h3><p>Shirk, magic, polytheism, mythology, and idol worship woven into story or mechanics.</p></div>
-        <div class="item"><h3>Financial Ethics</h3><p>Gambling, lootboxes, gacha, and card packs that mimic games of chance.</p></div>
-        <div class="item"><h3>Modesty</h3><p>Nudity, sexual content, and suggestive character design or themes.</p></div>
-        <div class="item"><h3>Violence Level</h3><p>Graphic gore and glorified violence versus stylized or cartoonish combat.</p></div>
+        <div class="item"><h3 class="benchmark">FAITH IMPACT</h3><p>Shirk, magic, polytheism, mythology, and idol worship woven into story or mechanics.</p></div>
+        <div class="item"><h3 class="benchmark">FINANCIAL ETHICS</h3><p>Gambling, lootboxes, gacha, and card packs that mimic games of chance.</p></div>
+        <div class="item"><h3 class="benchmark">MODESTY</h3><p>Nudity, sexual content, and suggestive character design or themes.</p></div>
+        <div class="item"><h3 class="benchmark">VIOLENCE LEVEL</h3><p>Graphic gore and glorified violence versus stylized or cartoonish combat.</p></div>
       </div>
       <p style="color:var(--color-ink-3); font-size:var(--text-sm); margin-top:var(--space-md)">Scores run 0 to 100. Roughly, 75 and up reads as Halal Friendly, 45 to 74 as Caution, and below 45 as best Avoided. Scholars differ on specifics, so treat this as a starting point, not a ruling.</p>
     </div>
   </section>
 
-  <section class="section" id="resources">
+  <section class="section section--band-alt" id="resources">
     <div class="shell">
       <h2>Islamic gaming resources</h2>
       <p style="color:var(--color-ink-2); margin-top:var(--space-sm)">Deeper reading and communities for Muslim gamers who want scholarly grounding.</p>

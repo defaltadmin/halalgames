@@ -52,6 +52,7 @@ function applyFilters(){
     return;
   }
   box.innerHTML=set.map(cardHTML).join('');
+  box.removeAttribute('aria-busy');
   const countLabel = set.length + ' game' + (set.length === 1 ? '' : 's');
   const queryLabel = STATE.query ? ' matching "' + esc(STATE.query) + '"' : '';
   $('#result-meta').textContent = countLabel + queryLabel;
@@ -74,7 +75,7 @@ function openDetail(slug){const g=STATE.all.find(x=>x.slug===slug);if(!g)return;
 const CONFIG={API_BASE:'/api/games'};
 let searchT;
 function normalizeApi(results){return(results||[]).map(r=>({id:r.id,name:r.name,slug:r.slug||String(r.name||'').toLowerCase().replace(/\s+/g,'-'),genres:(r.genres||[]).map(x=>x.name||x),platforms:(r.platforms||[]).map(p=>(p.platform&&p.platform.name)||p.name||p).slice(0,3),description:r.description_raw||r.description||'',tags:(r.tags||[]).map(t=>t.name||t),esrb:(r.esrb_rating&&r.esrb_rating.name)||'',stores:(r.stores||[]).map(s=>(s.store&&s.store.name)||s.name).filter(Boolean),screeningStatus:'unreviewed'}));}
-async function runSearch(q){STATE.query=q.trim();if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));const cached=cacheGet(STATE.query.toLowerCase());if(cached){mergeResults(local,cached);return;}$('#results').className='grid';$('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');try{const res=await fetch(`${CONFIG.API_BASE}?search=${encodeURIComponent(STATE.query)}&page_size=20`);if(!res.ok)throw new Error('bad status');const data=await res.json();const api=normalizeApi(data.results);cacheSet(STATE.query.toLowerCase(),api);mergeResults(local,api);}catch(err){if(local.length){mergeResults(local,[]);}else{STATE.all=[];applyFilters();showToast('Live search unavailable. Showing offline results.');}}}
+async function runSearch(q){STATE.query=q.trim();if(!STATE.query){STATE.all=STATE.seed.slice();applyFilters();return;}const local=STATE.seed.filter(g=>g.name.toLowerCase().includes(STATE.query.toLowerCase()));const cached=cacheGet(STATE.query.toLowerCase());if(cached){mergeResults(local,cached);return;}$('#results').className='grid';$('#results').setAttribute('aria-busy','true');$('#results').innerHTML=Array(4).fill('<div class="skeleton"></div>').join('');try{const res=await fetch(`${CONFIG.API_BASE}?search=${encodeURIComponent(STATE.query)}&page_size=20`);if(!res.ok)throw new Error('bad status');const data=await res.json();const api=normalizeApi(data.results);cacheSet(STATE.query.toLowerCase(),api);mergeResults(local,api);}catch(err){if(local.length){mergeResults(local,[]);}else{STATE.all=[];applyFilters();showToast('Live search unavailable. Showing offline results.');}}}
 function mergeResults(local,api){const seen=new Set(local.map(g=>g.slug));const merged=local.concat(api.filter(g=>!seen.has(g.slug)));STATE.all=merged;applyFilters();}
 
 /* ===== VOTING ===== */
