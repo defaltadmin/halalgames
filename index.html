@@ -192,9 +192,9 @@ button { font-family: inherit; cursor: pointer; border: none; }
 }
 .vtab[aria-pressed="true"] { color: var(--color-paper); }
 .vtab[data-v="all"][aria-pressed="true"] { background: var(--color-ink); }
-.vtab[data-v="halal"][aria-pressed="true"] { background: var(--color-halal); }
-.vtab[data-v="caution"][aria-pressed="true"] { background: var(--color-caution); color: var(--color-ink); }
-.vtab[data-v="haram"][aria-pressed="true"] { background: var(--color-haram); }
+.vtab[data-v="halal"][aria-pressed="true"] { background: oklch(50% 0.22 150); }
+.vtab[data-v="caution"][aria-pressed="true"] { background: oklch(55% 0.18 85); color: var(--color-paper); }
+.vtab[data-v="haram"][aria-pressed="true"] { background: oklch(50% 0.25 25); }
 .spacer { flex: 1; }
 #sort {
   background: var(--color-paper-2); border: 1px solid var(--color-rule); border-radius: var(--radius-input);
@@ -218,8 +218,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
   transition: border-color var(--dur-short), color var(--dur-short), background var(--dur-short);
 }
 .chip:hover { border-color: var(--color-ink-3); color: var(--color-ink); }
-.chip[aria-pressed="true"] { background: oklch(86% 0.18 95 / 0.15); border-color: var(--color-accent-deep); color: var(--color-accent-deep); }
-.chip-toggle { color: var(--color-accent-deep); font-weight: 600; background: var(--color-paper-2); }
+.chip[aria-pressed="true"] { background: oklch(66% 0.18 235 / 0.08); border-color: var(--color-accent-2-deep); color: var(--color-accent-2-deep); }
+.chip-toggle { color: var(--color-accent-2-deep); font-weight: 600; background: var(--color-paper-2); }
 
 /* ===== CATALOGUE GRID ===== */
 .result-meta { color: var(--color-ink-3); font-size: var(--text-sm); margin-bottom: var(--space-sm); min-height: 1.2em; font-weight: 500; }
@@ -267,10 +267,10 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .store-locked { color: var(--color-ink-3); font-size: 0.7rem; }
 .store-link {
   padding: 6px 12px; border-radius: var(--radius-pill); font-size: 0.7rem; font-weight: 600;
-  text-decoration: none; color: var(--color-paper); background: var(--color-halal);
+  text-decoration: none; color: var(--color-paper); background: oklch(50% 0.22 150);
   transition: background var(--dur-short);
 }
-.store-link:hover { background: oklch(62% 0.18 155); text-decoration: none; }
+.store-link:hover { background: oklch(42% 0.22 150); text-decoration: none; }
 
 /* Empty + skeleton */
 .empty { text-align: center; padding: var(--space-3xl) var(--space-md); color: var(--color-ink-3); grid-column: 1 / -1; }
@@ -355,9 +355,9 @@ dialog::backdrop { background: oklch(20% 0.012 250 / 0.6); backdrop-filter: blur
   width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
   font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
 }
-.m-emblem.halal { background: oklch(72% 0.18 155 / 0.12); color: var(--color-halal); }
-.m-emblem.caution { background: oklch(82% 0.16 85 / 0.15); color: oklch(60% 0.16 85); }
-.m-emblem.haram { background: oklch(65% 0.22 25 / 0.12); color: var(--color-haram); }
+.m-emblem.halal { background: oklch(50% 0.22 150 / 0.12); color: oklch(42% 0.22 150); }
+.m-emblem.caution { background: oklch(55% 0.18 85 / 0.15); color: oklch(52% 0.18 85); }
+.m-emblem.haram { background: oklch(50% 0.25 25 / 0.12); color: oklch(48% 0.25 25); }
 .m-title { font-size: var(--text-xl); margin-bottom: 4px; }
 .m-sub { color: var(--color-ink-3); font-size: var(--text-sm); }
 .m-verdict {
@@ -645,9 +645,9 @@ dialog::backdrop { background: oklch(20% 0.012 250 / 0.6); backdrop-filter: blur
 
 /* Verdict tab active state — accent color */
 .vtab[data-v="all"][aria-pressed="true"] { background: var(--color-ink); }
-.vtab[data-v="halal"][aria-pressed="true"] { background: var(--color-halal); }
-.vtab[data-v="caution"][aria-pressed="true"] { background: var(--color-caution); color: var(--color-ink); }
-.vtab[data-v="haram"][aria-pressed="true"] { background: var(--color-haram); }
+.vtab[data-v="halal"][aria-pressed="true"] { background: oklch(50% 0.22 150); }
+.vtab[data-v="caution"][aria-pressed="true"] { background: oklch(55% 0.18 85); color: var(--color-paper); }
+.vtab[data-v="haram"][aria-pressed="true"] { background: oklch(50% 0.25 25); }
 
 /* Genre chip active — accent underline */
 .chip[aria-pressed="true"] { position: relative; }
@@ -927,3 +927,5 @@ img.loaded { opacity: 1; }
 <script src="/assets/app.9225e38.js" defer></script>
 </body>
 </html>
+
+
