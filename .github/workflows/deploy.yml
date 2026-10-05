@@ -1,0 +1,54 @@
+name: Deploy to Cloudflare Pages
+
+# This repo had CI but no deploy path - pushes never reached
+# halalgames.mscarabia.com.
+#
+# REQUIRED: two repository secrets under Settings > Secrets and variables >
+# Actions, identical to the ones already used by defaltadmin/donttouchpurple:
+#   CLOUDFLARE_API_TOKEN
+#   CLOUDFLARE_ACCOUNT_ID
+#
+# Verify the project name below against Cloudflare > Workers & Pages.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Static site, no build step. tailwind.css is prebuilt and committed;
+      # see package.json / scripts before regenerating it.
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy . --project-name=halalgames --branch=main --commit-dirty=true
+
+      - name: Verify the new build is live
+        run: |
+          for i in $(seq 1 20); do
+            if curl -s "https://halalgames.mscarabia.com/?cb=$GITHUB_SHA" | grep -q 'rel="canonical"'; then
+              echo "Deployed and verified."
+              exit 0
+            fi
+            echo "attempt $i: not live yet, waiting..."
+            sleep 15
+          done
+          echo "::error::Pushed, but halalgames.mscarabia.com is still serving an older build."
+          exit 1
