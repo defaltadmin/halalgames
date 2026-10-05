@@ -89,6 +89,12 @@
   /* Shadows */
   --shadow-card: 0 12px 32px -16px oklch(20% 0.012 250 / 0.12);
   --shadow-card-hover: 0 16px 40px -12px oklch(20% 0.012 250 / 0.18);
+
+  /* Glassmorphism */
+  --glass: oklch(100% 0.01 95 / 0.7);
+  --glass-blur: 16px;
+  --glass-border: oklch(90% 0.012 95 / 0.5);
+  --glass-border-hover: oklch(80% 0.012 95 / 0.7);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -135,7 +141,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 @keyframes sp { to { transform: rotate(360deg); } }
 
 /* ===== NAV — N1 wordmark + 2 links ===== */
-.nav { position: sticky; top: 0; z-index: 100; background: oklch(97% 0.012 95 / 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-rule); }
+.nav { position: sticky; top: 0; z-index: 100; background: var(--glass); backdrop-filter: blur(var(--glass-blur)); border-bottom: 1px solid var(--glass-border); }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--color-ink); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.03em; }
 .brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--color-accent); animation: pulse-dot 4s ease-in-out infinite; }
@@ -224,6 +230,20 @@ button { font-family: inherit; cursor: pointer; border: none; }
 /* ===== CATALOGUE GRID ===== */
 .result-meta { color: var(--color-ink-3); font-size: var(--text-sm); margin-bottom: var(--space-sm); min-height: 1.2em; font-weight: 500; }
 .grid { display: grid; gap: var(--space-md); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
+  transition: transform var(--dur-med) var(--ease-spring), border-color var(--dur-med), box-shadow var(--dur-med);
+}
+.glass-card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
 .grid.list { grid-template-columns: 1fr; }
 
 /* Game cards — Hum color-shift grid */
@@ -307,12 +327,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
 /* ===== CONTACT ===== */
 .contact-note {
-  background: var(--color-paper-2); border: 1px solid var(--color-rule);
+  background: var(--glass); backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-card); padding: var(--space-lg); max-width: 60ch;
 }
 
 /* ===== FOOTER — Ft5 Statement ===== */
-.footer { border-top: 1px solid var(--color-rule); padding: var(--space-xl) 0; }
+.footer { border-top: 1px solid var(--glass-border); padding: var(--space-xl) 0; background: var(--glass); backdrop-filter: blur(12px); }
 .footer-inner { display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: center; justify-content: space-between; }
 .footer .made { color: var(--color-ink-3); font-size: var(--text-sm); }
 .footer .links { display: flex; gap: var(--space-md); flex-wrap: wrap; }
@@ -440,7 +461,8 @@ dialog::backdrop { background: oklch(20% 0.012 250 / 0.6); backdrop-filter: blur
 .catalog-toolbar {
   display: flex; align-items: end; justify-content: space-between; gap: var(--space-md);
   margin-bottom: var(--space-md); padding: var(--space-md) var(--space-lg);
-  background: var(--color-paper-2); border: 1px solid var(--color-rule); border-radius: var(--radius-card);
+  background: var(--glass); backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border); border-radius: var(--radius-card);
 }
 .catalog-actions { display: flex; gap: var(--space-2xs); }
 .catalog-view {
