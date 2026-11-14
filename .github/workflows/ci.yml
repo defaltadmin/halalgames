@@ -43,7 +43,18 @@ jobs:
           echo "=== Smoke test: halalgames.mscarabia.com ==="
 
           # / — must return 200 and contain app.7035cc8.js reference
-          status=$(curl -fsS -o /dev/null -w '%{http_code}' https://halalgames.mscarabia.com/)
+          headers=$(mktemp)
+          body=$(mktemp)
+          status=$(curl -sS -D "$headers" -o "$body" -w '%{http_code}' https://halalgames.mscarabia.com/ || true)
+          echo "Homepage HTTP status: $status"
+          ray_id=$(grep -i '^cf-ray:' "$headers" | tail -n 1 | cut -d':' -f2- | xargs || true)
+          echo "Cloudflare Ray ID: ${ray_id:-not present}"
+          if [ "$status" != "200" ]; then
+            echo "Response body excerpt (first 300 characters):"
+            head -c 300 "$body" || true
+            echo
+          fi
+          rm -f "$headers" "$body"
           [ "$status" = "200" ] || { echo "FAIL: / returned $status"; exit 1; }
           curl -fsS https://halalgames.mscarabia.com/ | grep -q "app.7035cc8.js" || { echo "FAIL: / missing app.js ref"; exit 1; }
 
